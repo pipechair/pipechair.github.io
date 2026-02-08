@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<!-- saved from url=(0152)file:///F:/SynologyDrive/D&D5e%20%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%99%E3%83%BC%E3%82%B7%E3%83%83%E3%82%AF/FVTT%20D&D5e%20Character%20Sheet%20Viewer.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FVTT D&amp;D5e Character Sheet Viewer</title>
+<style>
+:root{--bg:#1a1714;--sf:#242018;--sf2:#2e2820;--bd:#3e362a;--bda:#8b7340;--tx:#e8e2d6;--tm:#9e9486;--td:#6e6458;--ac:#c9a84c;--acd:#7a6630;--red:#c44040;--grn:#48a848;--blu:#5588cc}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font:14px/1.5 'Segoe UI',system-ui,-apple-system,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif}
+
+/* Toolbar */
+.toolbar{background:var(--sf);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:100;backdrop-filter:blur(6px)}
+.toolbar-title{font-size:15px;font-weight:700;color:var(--ac);margin-right:auto}
+.btn,input[type=file]{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:6px 12px;border-radius:6px;font-size:13px}
+.btn{cursor:pointer;transition:border-color .15s}
+.btn:hover{border-color:var(--ac)}
+.btn-export{background:#2a3020;border-color:#4a6030;color:#a0d070}
+.btn-export:hover{border-color:#80c040}
+.btn-restore{background:#302a20;border-color:#605030;color:#d0b070}
+.btn-restore:hover{border-color:#a08040}
+select.btn{appearance:auto}
+
+/* Autosave toggle */
+.autosave-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:12px;color:var(--tm)}
+.autosave-toggle input{display:none}
+.autosave-slider{width:36px;height:20px;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;position:relative;transition:background .2s}
+.autosave-slider::after{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;background:var(--td);border-radius:50%;transition:transform .2s,background .2s}
+.autosave-toggle input:checked+.autosave-slider{background:var(--acd);border-color:var(--ac)}
+.autosave-toggle input:checked+.autosave-slider::after{transform:translateX(16px);background:var(--ac)}
+.autosave-label{color:var(--tm)}
+
+.dropzone{border:2px dashed var(--bd);border-radius:12px;padding:24px;text-align:center;color:var(--tm);margin:16px;transition:.2s}
+.dropzone.drag{border-color:var(--ac);color:var(--tx);background:rgba(201,168,76,.05)}
+
+/* Sheet */
+.sheet{max-width:1120px;margin:0 auto;padding:12px 16px 48px;display:none}
+.sheet.active{display:block}
+
+/* Header */
+.char-header{text-align:center;padding:20px 0 14px;border-bottom:2px solid var(--bda);margin-bottom:16px}
+.char-name{font-size:30px;font-weight:700;letter-spacing:.04em}
+.char-sub{font-size:14px;color:var(--tm);margin-top:4px}
+
+/* 3-column body */
+.sheet-body{display:grid;grid-template-columns:86px minmax(220px,1fr) minmax(300px,1.4fr);gap:12px;margin-bottom:16px}
+
+/* Ability boxes */
+.ab-col{display:flex;flex-direction:column;gap:16px}
+.ab-box{position:relative;border:2px solid var(--bda);border-radius:8px;padding:8px 4px 22px;text-align:center;background:var(--sf)}
+.ab-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ac)}
+.ab-score{font-size:26px;font-weight:700;line-height:1.2}
+.ab-mod{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:36px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bda);border-radius:14px;background:var(--sf);font-size:14px;font-weight:700}
+
+/* Panels */
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.panel+.panel{margin-top:10px}
+.p-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ac);text-align:center;padding-bottom:5px;border-bottom:1px solid var(--bd);margin-bottom:6px}
+
+/* Prof & Inspiration */
+.prof-row{display:flex;gap:8px;margin-bottom:10px}
+.prof-box{flex:1;display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.prof-box .big{font-size:22px;font-weight:700;color:var(--ac);min-width:34px;text-align:center}
+.prof-box .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--tm);line-height:1.3}
+
+/* Dot */
+.dot{display:inline-block;width:10px;height:10px;border:1.5px solid var(--ac);border-radius:50%;flex-shrink:0;margin-right:5px;vertical-align:middle}
+.dot.full{background:var(--ac)}
+.dot.half{background:linear-gradient(90deg,var(--ac) 50%,transparent 50%)}
+.dot.expert{background:var(--ac);box-shadow:0 0 0 2px var(--sf),0 0 0 3.5px var(--ac)}
+
+/* Save / Skill rows */
+.s-row{display:flex;align-items:center;padding:2.5px 0;font-size:13px}
+.s-row .bonus{min-width:30px;text-align:right;font-weight:600;margin-right:6px}
+.s-row .name{flex:1}
+.s-row .abil{font-size:10px;color:var(--td);text-transform:uppercase;margin-left:3px}
+
+/* Passive */
+.passive{display:flex;align-items:center;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin-top:10px}
+.passive .big{font-size:20px;font-weight:700;min-width:32px;text-align:center;margin-right:8px}
+.passive .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--tm)}
+
+/* Combat trio */
+.combat-trio{display:flex;gap:8px;margin-bottom:10px}
+.c-box{flex:1;text-align:center;border:2px solid var(--bda);border-radius:8px;padding:6px 4px;background:var(--sf)}
+.c-box .lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ac)}
+.c-box .val{font-size:26px;font-weight:700}
+.c-box .unit{font-size:11px;color:var(--tm)}
+
+/* HP */
+.hp-panel{border:2px solid var(--bda);border-radius:8px;padding:10px;background:var(--sf);margin-bottom:10px}
+.hp-row{display:flex;justify-content:center;align-items:center;gap:6px}
+.hp-cur{font-size:28px;font-weight:700;width:60px;text-align:center;background:transparent;border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:inherit}
+.hp-cur:focus{border-color:var(--ac);outline:none}
+.hp-sep{color:var(--td);font-size:20px;font-weight:700}
+.hp-max{font-size:28px;font-weight:700}
+.hp-bar{height:6px;background:var(--sf2);border-radius:3px;overflow:hidden;margin:6px 0}
+.hp-bar-fill{height:100%;border-radius:3px;transition:width .3s,background .3s}
+.hp-adj{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.hp-adj-input{width:50px;text-align:center;background:var(--sf2);border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:13px;padding:3px}
+.hp-adj-input:focus{border-color:var(--ac);outline:none}
+.hp-btn{padding:3px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;border:1px solid}
+.hp-btn-dmg{background:#3a2020;border-color:#804040;color:#e08080}
+.hp-btn-dmg:hover{background:#4a2020;border-color:#c04040}
+.hp-btn-heal{background:#203a20;border-color:#408040;color:#80e080}
+.hp-btn-heal:hover{background:#204a20;border-color:#40c040}
+.hp-temp-row{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--blu)}
+.hp-temp-input{width:40px;text-align:center;background:transparent;border:1px solid var(--bd);border-radius:4px;color:var(--blu);font-size:12px;padding:2px;font-family:inherit}
+.hp-temp-input:focus{border-color:var(--ac);outline:none}
+
+/* HD & Death */
+.hd-death{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mini-p{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center}
+.mini-p .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--ac);margin-bottom:3px}
+.dd{display:flex;justify-content:center;gap:5px;margin:2px 0}
+.dd .d{width:14px;height:14px;border:1.5px solid var(--td);border-radius:50%;cursor:pointer;transition:all .15s}
+.dd .d:hover{border-color:var(--ac);transform:scale(1.2)}
+.dd .d.ok{background:var(--grn);border-color:var(--grn)}
+.dd .d.ng{background:var(--red);border-color:var(--red)}
+
+/* Tables */
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--tm);font-weight:600;text-align:left;padding:4px 6px;border-bottom:1px solid var(--bd)}
+.t td{padding:4px 6px;border-bottom:1px solid rgba(62,54,42,.4);vertical-align:top}
+
+/* Hide native number spinner */
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+/* Inline edit inputs */
+.e-num{width:42px;text-align:center;background:transparent;border:1px solid var(--bd);border-radius:4px;color:var(--tx);font-size:13px;padding:2px 4px;font-family:inherit}
+.e-num:focus{border-color:var(--ac);outline:none}
+.e-coin{width:48px;text-align:center;background:transparent;border:1px solid var(--bd);border-radius:4px;font-size:13px;padding:2px 4px;font-family:inherit}
+.e-coin:focus{border-color:var(--ac);outline:none}
+.coin-pp .e-coin{color:#b0b8cc}
+.coin-gp .e-coin{color:#d4a848}
+.coin-ep .e-coin{color:#8898a8}
+.coin-sp .e-coin{color:#a8b0b8}
+.coin-cp .e-coin{color:#b88860}
+
+/* Number control +/- buttons */
+.nc{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}
+.nc-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--bd);border-radius:5px;background:var(--sf2);color:var(--tm);font-size:16px;font-weight:700;cursor:pointer;user-select:none;line-height:1;padding:0;transition:all .12s}
+.nc-btn:hover{border-color:var(--ac);color:var(--tx);background:var(--sf)}
+.nc-btn:active{transform:scale(.9);background:var(--bda);color:var(--bg)}
+.nc .e-num,.nc .e-coin{border-radius:0;border-left:none;border-right:none}
+.nc .nc-btn:first-child{border-radius:5px 0 0 5px}
+.nc .nc-btn:last-child{border-radius:0 5px 5px 0}
+
+/* Clickable toggles */
+.clickable{cursor:pointer;user-select:none;transition:transform .1s}
+.clickable:hover{transform:scale(1.15)}
+.clickable:active{transform:scale(.95)}
+
+/* Full-width sections */
+.sec{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ac);border-bottom:1px solid var(--bd);padding-bottom:5px;margin-bottom:8px}
+
+/* Personality grid */
+.pers-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pers-box{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.pers-box .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ac);margin-bottom:3px}
+.pers-box .ct{font-size:13px;color:var(--tm);line-height:1.5}
+.pers-box.clickable{cursor:pointer;transition:border-color .15s}
+.pers-box.clickable:hover{border-color:var(--ac);transform:none}
+
+/* Prof & Languages */
+.pl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pl-grp .lbl{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ac);margin-bottom:3px}
+.pl-grp .items{font-size:12px;color:var(--tm)}
+.pill{display:inline-block;border:1px solid var(--bd);border-radius:999px;padding:1px 8px;margin:2px 3px 2px 0;font-size:12px}
+
+/* Spells */
+.sp-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:13px}
+.sp-meta b{color:var(--tm);font-weight:600}
+.sp-slots{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:12px}
+.sl-grp{display:flex;align-items:center;gap:3px}
+.sl-grp .lv{font-size:11px;color:var(--tm);min-width:26px}
+.sl-d{width:14px;height:14px;border:1.5px solid var(--acd);border-radius:50%;cursor:pointer;transition:all .15s}
+.sl-d:hover{border-color:var(--ac);transform:scale(1.2)}
+.sl-d.on{background:var(--ac);border-color:var(--ac)}
+.sp-lv{border:1px solid var(--bd);border-radius:8px;margin-bottom:6px}
+.sp-lv summary{cursor:pointer;padding:6px 10px;font-size:13px;font-weight:600;user-select:none}
+.sp-lv summary:hover{color:var(--ac)}
+.sp-lv-body{padding:0 10px 8px}
+.sp-entry{display:flex;align-items:flex-start;gap:6px;padding:3px 0;font-size:13px;border-bottom:1px solid rgba(62,54,42,.3)}
+.sp-entry:last-child{border-bottom:none}
+.sp-entry .prep{color:var(--grn);font-size:14px;flex-shrink:0;width:18px;text-align:center;cursor:pointer;user-select:none;transition:transform .1s}
+.sp-entry .prep:hover{transform:scale(1.3)}
+.sp-entry .prep.off{color:var(--td)}
+.sp-entry .sn{font-weight:600;min-width:110px}
+.sp-entry .sd{font-size:12px;color:var(--tm);flex:1}
+
+/* Features */
+.feat-item{border-bottom:1px solid rgba(62,54,42,.4);padding:5px 0}
+.feat-item:last-child{border-bottom:none}
+.feat-item .fn{font-weight:600;font-size:13px}
+.feat-item .fs{font-size:11px;color:var(--td);margin-left:6px}
+.feat-item .fd{font-size:12px;color:var(--tm);margin-top:2px;line-height:1.5}
+.feat-uses{display:inline-flex;align-items:center;gap:3px;margin-left:8px;font-size:12px;color:var(--blu)}
+
+/* Currency */
+.coins{display:flex;gap:14px;justify-content:center;padding:6px 0;font-size:13px}
+.coin{display:flex;align-items:center;gap:3px}
+.coin .cl{font-size:11px;font-weight:700;text-transform:uppercase}
+.coin-pp .cl{color:#b0b8cc}
+.coin-gp .cl{color:#d4a848}
+.coin-ep .cl{color:#8898a8}
+.coin-sp .cl{color:#a8b0b8}
+.coin-cp .cl{color:#b88860}
+
+/* Equipped toggle */
+.eq-toggle{cursor:pointer;user-select:none;font-size:14px}
+.eq-toggle:hover{filter:brightness(1.3)}
+
+/* Bio */
+.bio-ct{font-size:13px;line-height:1.7;color:var(--tm)}
+.bio-ct h1,.bio-ct h2,.bio-ct h3{color:var(--tx);margin:10px 0 4px}
+.bio-section.clickable{cursor:pointer;transition:border-color .15s}
+.bio-section.clickable:hover{border-color:var(--ac);transform:none}
+
+/* Responsive */
+@media(max-width:900px){
+  .sheet-body{grid-template-columns:1fr}
+  .ab-col{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:10px}
+  .pers-grid{grid-template-columns:1fr}
+  .pl-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  body{font-size:13px}
+  .toolbar{padding:8px 10px;gap:6px}
+  .toolbar-title{font-size:13px;width:100%}
+  input[type=file]{font-size:11px;max-width:160px;overflow:hidden}
+  .btn{padding:5px 8px;font-size:12px}
+  .dropzone{margin:8px;padding:16px;font-size:13px}
+  .sheet{padding:8px 8px 40px}
+  .char-name{font-size:22px}
+  .char-sub{font-size:12px}
+  .combat-trio{flex-wrap:wrap}
+  .c-box{min-width:0}
+  .c-box .val{font-size:22px}
+  .hp-cur{font-size:22px;width:50px}
+  .hp-max{font-size:22px}
+  .hp-adj{flex-wrap:wrap;gap:4px}
+  .hp-btn{padding:6px 12px;font-size:13px}
+  .hd-death{grid-template-columns:1fr}
+  .coins{flex-wrap:wrap;gap:8px}
+  .coin{gap:2px}
+  .nc-btn{width:30px;height:30px;font-size:18px}
+  .nc{gap:1px}
+  .e-num{width:38px;font-size:12px}
+  .e-coin{width:42px;font-size:12px}
+  .sp-entry{flex-wrap:wrap}
+  .sp-entry .sn{min-width:0}
+  .sp-entry .sd{width:100%;padding-left:24px}
+  .sp-slots{gap:8px}
+  .sec{padding:10px 8px}
+  .panel{padding:8px}
+  /* Tables scroll horizontally if needed */
+  .panel,.sec{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .t{min-width:280px}
+  .t th,.t td{padding:4px 4px;font-size:12px}
+  .prof-row{flex-wrap:wrap}
+  .prof-box{padding:6px 8px}
+  .feat-item .fn{font-size:12px}
+  .feat-item .fd{font-size:11px}
+  .pl-grp{margin-bottom:6px}
+}
+.text-m{color:var(--tm)}
+.text-d{color:var(--td)}
+.text-s{font-size:12px}
+/* Prevent horizontal overflow */
+html{overflow-x:hidden}
+.sheet,.sec,.panel{max-width:100%}
+
+/* Item tooltip - clickable for edit */
+.tip{position:relative;cursor:pointer;border-bottom:1px dotted var(--td)}
+.tip:hover{color:var(--ac)}
+.tip .tip-body{display:none;position:absolute;left:0;top:calc(100% + 6px);width:min(360px,85vw);background:var(--sf);border:1px solid var(--bda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--tm);text-align:left;white-space:normal;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.5);font-weight:400;pointer-events:none}
+.tip:hover .tip-body,.tip:focus .tip-body{display:block}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--sf);border:2px solid var(--bda);border-radius:12px;width:min(600px,95vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.modal-header{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.modal-title{flex:1;font-size:16px;font-weight:700;color:var(--ac)}
+.modal-close{background:none;border:none;font-size:24px;color:var(--tm);cursor:pointer;padding:0 4px;line-height:1}
+.modal-close:hover{color:var(--tx)}
+.modal-body{flex:1;overflow-y:auto;padding:16px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--bd)}
+.modal-label{display:block;font-size:12px;color:var(--tm);margin-bottom:4px}
+.modal-input{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:14px;padding:8px 10px;font-family:inherit;resize:vertical}
+.modal-input:focus{border-color:var(--ac);outline:none}
+.modal-name{resize:none;overflow:hidden}
+.modal-name.multi{min-height:80px;overflow-y:auto;resize:vertical}
+.modal-textarea{min-height:200px}
+.modal-btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid}
+.modal-btn-cancel{background:var(--sf2);border-color:var(--bd);color:var(--tm)}
+.modal-btn-cancel:hover{border-color:var(--ac);color:var(--tx)}
+.modal-btn-save{background:#2a4020;border-color:#4a8030;color:#a0e070}
+.modal-btn-save:hover{background:#304820;border-color:#60a040}
+.modal-btn-edit{background:#203040;border-color:#406080;color:#80b0e0}
+.modal-btn-edit:hover{background:#284050;border-color:#5080a0}
+.modal-btn-edit.active{background:#406080;border-color:#80b0e0}
+.modal-btn-revert{background:#402020;border-color:#804040;color:#e0a080}
+.modal-btn-revert:hover{background:#503030;border-color:#a06060}
+
+/* Modal view/edit modes */
+.modal-view{line-height:1.7;color:var(--tm);font-size:14px;min-height:100px;max-height:400px;overflow-y:auto;padding:12px;background:var(--sf2);border:1px solid var(--bd);border-radius:6px}
+.modal-view h1,.modal-view h2,.modal-view h3{color:var(--tx);margin:12px 0 6px;font-size:1.1em}
+.modal-view p{margin:8px 0}
+.modal-view ul,.modal-view ol{margin:8px 0;padding-left:24px}
+.modal-view li{margin:4px 0}
+.modal-view strong,.modal-view b{color:var(--tx)}
+.modal-view em,.modal-view i{font-style:italic}
+.modal-no-desc{color:var(--td);font-style:italic}
+
+/* Footer */
+.site-footer{text-align:center;padding:16px;font-size:11px;color:var(--td);border-top:1px solid var(--bd);margin-top:24px}
+.mit-tip{position:relative;display:inline;cursor:help;color:var(--tm);text-decoration:underline dotted var(--td);text-underline-offset:2px}
+.mit-tip .mit-body{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:min(480px,90vw);background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;font-size:11px;line-height:1.6;color:var(--tm);text-align:left;white-space:pre-wrap;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.mit-tip:hover .mit-body,.mit-tip:focus .mit-body{display:block}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="toolbar-title">D&amp;D 5e Character Sheet</span>
+  <input id="file" type="file" accept=".json,application/json">
+  <button class="btn" id="demoBtn">Demo Sample</button>
+  <button class="btn btn-export" id="exportBtn" style="display: inline-block;">Export JSON</button>
+  <button class="btn btn-restore" id="restoreBtn" style="display:none">復元</button>
+  <select id="actorSel" class="btn" style="display:none"></select>
+  <label class="autosave-toggle"><input type="checkbox" id="autoSaveChk"><span class="autosave-slider"></span><span class="autosave-label">自動保存</span></label>
+  <label class="autosave-toggle"><input type="checkbox" id="editModeChk"><span class="autosave-slider"></span><span class="autosave-label">詳細修正</span></label>
+</div>
+<div id="dropzone" class="dropzone" style="display: none;">
+  JSONファイルをドラッグ＆ドロップ / ファイル選択で読み込み<br>
+  <span class="text-s text-m">Foundry VTT D&amp;D5e Actor JSON対応 — すべてローカル処理</span>
+</div>
+<div id="sheet" class="sheet active"><div class="char-header"><div class="char-name">クロメノウ</div><div class="char-sub">ローグ (スカウト) Lv5 · タバクシー · 犯罪者（Criminal） · — · 9780 XP</div></div><div class="sheet-body"><div class="ab-col"><div class="ab-box"><div class="ab-lbl">STR</div><div class="ab-score">10</div><div class="ab-mod">+0</div></div><div class="ab-box"><div class="ab-lbl">DEX</div><div class="ab-score">19</div><div class="ab-mod">+4</div></div><div class="ab-box"><div class="ab-lbl">CON</div><div class="ab-score">10</div><div class="ab-mod">+0</div></div><div class="ab-box"><div class="ab-lbl">INT</div><div class="ab-score">14</div><div class="ab-mod">+2</div></div><div class="ab-box"><div class="ab-lbl">WIS</div><div class="ab-score">10</div><div class="ab-mod">+0</div></div><div class="ab-box"><div class="ab-lbl">CHA</div><div class="ab-score">14</div><div class="ab-mod">+2</div></div></div><div><div class="prof-row"><div class="prof-box"><div class="big clickable" data-action="toggle-inspiration">☆</div><div class="lbl">Inspiration</div></div><div class="prof-box"><div class="big">+3</div><div class="lbl">習熟ボーナス</div></div></div><div class="panel"><div class="p-title">セーヴィング・スロー</div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">筋力</div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+7</div><div class="name">敏捷</div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">耐久</div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+5</div><div class="name">知力</div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">判断</div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">魅力</div></div></div><div class="panel"><div class="p-title">技能</div><div class="s-row"><div class="dot full"></div><div class="bonus">+7</div><div class="name">軽業<span class="abil">dex</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">動物使い<span class="abil">wis</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">魔法学<span class="abil">int</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">運動<span class="abil">str</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+5</div><div class="name">ペテン<span class="abil">cha</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">歴史<span class="abil">int</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">看破<span class="abil">wis</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">威圧<span class="abil">cha</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+5</div><div class="name">捜査<span class="abil">int</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+0</div><div class="name">医術<span class="abil">wis</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+5</div><div class="name">自然<span class="abil">int</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+3</div><div class="name">知覚<span class="abil">wis</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">芸能<span class="abil">cha</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">説得<span class="abil">cha</span></div></div><div class="s-row"><div class="dot "></div><div class="bonus">+2</div><div class="name">宗教<span class="abil">int</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+7</div><div class="name">手先の早業<span class="abil">dex</span></div></div><div class="s-row"><div class="dot expert"></div><div class="bonus">+10</div><div class="name">隠密<span class="abil">dex</span></div></div><div class="s-row"><div class="dot full"></div><div class="bonus">+3</div><div class="name">生存<span class="abil">wis</span></div></div></div><div class="passive"><div class="big">13</div><div class="lbl">受動知覚 (Passive Perception)</div></div></div><div><div class="combat-trio"><div class="c-box"><div class="lbl">AC</div><div class="val">15</div></div><div class="c-box"><div class="lbl">イニシアチブ</div><div class="val">+4</div></div><div class="c-box"><div class="lbl">移動速度</div><div class="val">30</div><div class="unit">ft</div></div></div><div class="hp-panel"><div class="p-title">ヒットポイント</div><div class="hp-row"><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="hp-cur" data-action="set-hp" value="28" min="0" max="28"><button type="button" class="nc-btn" data-nc="1">+</button></span><span class="hp-sep">/</span><span class="hp-max">28</span></div><div class="hp-bar"><div class="hp-bar-fill" style="width:100%;background:var(--grn)"></div></div><div class="hp-adj"><button class="hp-btn hp-btn-dmg" data-action="hp-dmg">Damage</button><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="hp-adj-input" id="hpDelta" value="0" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span><button class="hp-btn hp-btn-heal" data-action="hp-heal">Heal</button></div><div class="hp-temp-row">一時HP: <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="hp-temp-input" data-action="set-temp-hp" value="0" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></div></div><div class="hd-death"><div class="mini-p"><div class="lbl">ヒットダイス</div><div style="margin:3px 0"><span class="text-s">d8</span> <span style="font-weight:700">5</span>/5 <button class="hp-btn hp-btn-dmg" style="font-size:10px;padding:1px 6px" data-action="hd-use" data-class-idx="0">使用</button> <button class="hp-btn hp-btn-heal" style="font-size:10px;padding:1px 6px" data-action="hd-recover" data-class-idx="0">回復</button></div></div><div class="mini-p"><div class="lbl">デス・セーヴ</div><div class="text-s">成功</div><div class="dd"><div class="d " data-action="death-success" data-idx="0"></div><div class="d " data-action="death-success" data-idx="1"></div><div class="d " data-action="death-success" data-idx="2"></div></div><div class="text-s">失敗</div><div class="dd"><div class="d " data-action="death-failure" data-idx="0"></div><div class="d " data-action="death-failure" data-idx="1"></div><div class="d " data-action="death-failure" data-idx="2"></div></div></div></div><div class="panel"><div class="p-title">攻撃</div><table class="t"><thead><tr><th>名称</th><th>攻撃</th><th>ダメージ</th></tr></thead><tbody><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="2">猫爪<span class="tip-body">君は爪のおかげで登攀移動速度20フィートを有する。加えて、君の爪は肉体武器であり、君は爪による素手打撃を行なうことができる。通常の素手打撃が[殴打]ダメージを与えるのに対して、君の爪はヒットすると([[/r 1d4]]＋【筋力】修正値)の[斬撃]ダメージを与える。</span></span></td><td>+3</td><td>—</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="8">ショートボウ<span class="tip-body">1d6 [刺突]&nbsp; - 両手用, 矢弾 (80/320)
+
+
+
+
+この両手用の弓は、伝統的なロングボウよりもやや小さいため、移動中や馬上での急襲に適している。</span></span></td><td>+7</td><td>—</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="11">ダガー<span class="tip-body">1d4 [刺突]&nbsp; - 妙技, 軽武器, 投擲 (20/60)
+
+
+
+
+金属製の短い刃と小さな柄を持つ武器。ダガーは、戦士や暗殺者、泥棒のための予備の武器として隠し持つのに最適だ。</span></span></td><td>+7</td><td>—</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="43">ショートボウ<span class="tip-body">この両手用の弓は、伝統的なロングボウよりもやや小さいため、移動中や馬上での急襲に適している。</span></span></td><td>+7</td><td>—</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="52">サバイバルナイフ<span class="tip-body">この頑丈なナイフを手に持っている場合、アクションを使って、@UUID[Compendium.dnd5e.items.X5knPtrQAT8GePJ4]{つるはし}、@UUID[Compendium.dnd5e.items.hOzuSDqmOIOx8z3Z]{釣具}、@UUID[Compendium.dnd5e.items.LiOD83I4MIZlpoQQ]{獣罠}、または手斧（主に切り刻むための道具。武器として使用する場合、このダガーと同じデータ・ブロックを使用するが、[斬撃]ダメージを与える）に変形させることができる。変形させたナイフを保持または触れている間、アクションを使用して別の形態に変形させたり、元の形状に戻すことができる。ドワーフ語で変形のために必要なコマンドワードが書かれている。</span></span></td><td>+7</td><td>—</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="53">+1 Shortbow<span class="tip-body">Ranged Weapon Attack: [[/r 1d20+5]]{+5} to hit, range 80/320 ft., one target. Hit: 6 ([[/damage 1d6 + 3 type=piercing]]) damage.</span></span></td><td>+8</td><td>— +1</td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="68">ダガー +1<span class="tip-body">君はこの魔法の武器を用いた攻撃ロールとダメージ・ロールに+1ボーナスを得る。</span></span></td><td>+8</td><td>— +1</td></tr></tbody></table></div><div class="panel"><div class="p-title">装備・所持品</div><table class="t"><thead><tr><th>名称</th><th>種別</th><th>数</th></tr></thead><tbody><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="9">泥棒パック(16gp)<span class="tip-body">@Compendium[dnd5eja.items.4xObcndsjlqfbfdW]{背負い袋}、@Compendium[dnd5eja.items.gpcG5EUCr7MEOxaX]{小さな金属球 (1000個入り袋)}、10フィートの細紐、@Compendium[dnd5eja.items.NdpfEu1eShwuNnoL]{ベル}、@Compendium[dnd5eja.items.0Jo6U2L15YDUhZAI]{ろうそく}5本、@Compendium[dnd5eja.items.6DxOwlUS6ME9jjd7]{かなてこ}、@Compendium[dnd5eja.items.s9geCLgAwcHDJ0T1]{金槌}、@Compendium[dnd5eja.items.okUDflOTVR2L7eXi]{ピトン}10本、@Compendium[dnd5eja.items.BSSY2YKHltZrvdut]{覆い付きランタン}、@Compendium[dnd5eja.items.3qWHyQam7srsXI5Z]{油}2ビン、@Compendium[dnd5eja.items.PJFOpCvjnZ62oqGx]{保存食}5日分、@Compendium[dnd5eja.items.X38vcVvs0pZWEVWB]{ほくち箱}、@Compendium[dnd5eja.items.cPEFFcRALpoC6S7v]{水袋}。加えて背負い袋の脇には50フィートの@Compendium[dnd5eja.items.RmmogMH4RstdEZOM]{麻のロープ}がくくりつけられている。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="9" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class=" eq-toggle" style="color:var(--grn)" data-action="toggle-equip" data-item-idx="10">◆</span> <span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="10">レザー･アーマー<span class="tip-body">軽装鎧
+
+
+
+
+この防具の胸当てと肩当ての部分は、煮立った油で硬化させた革が用いられ、その他の部分は、より柔らかく柔軟な材料で作られている。</span></span></td><td class="text-s text-m">equipment</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="10" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="12">盗賊道具<span class="tip-body">この道具一式には、小さなの金やすり、鍵開け道具セット、金属の柄を持つ小さな鏡、細身のハサミ、ペンチが入っている。
+君がこの道具に習熟しているなら、鍵を開けたり罠を無力化するために行なう君の能力値判定に習熟ボーナスが得られる。</span></span></td><td class="text-s text-m">tool</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="12" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="13">携帯用寝具<span class="tip-body">旅人が寝るときに使う、丸められた布。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="13" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="14">耐毒剤<span class="tip-body">この液体を小ビン1つぶん飲み干したクリーチャーは、以後1時間、毒に対するセーヴィング・スローに有利を得る。ただしアンデッドや人造クリーチャーはこの利益を受けられない。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="14" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="15">ずだ袋<span class="tip-body">1立方フィート / 300ポンドの物を入れることができる。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="15" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="16">保存食 (1日分)<span class="tip-body">保存食は、主に水気の無い乾物を揃えたもので、長旅に向いた携行食だ。
+これには堅パンや干し肉、干し果物、ナッツなどが含まれる。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="16" value="8" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="17">背負い袋<span class="tip-body">1立方ﾌｨｰﾄ / 30ポンドの物を入れることができる。
+その他にも背負い袋の外側に、携帯用寝具やロープをくくりつけて運ぶことができる。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="17" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="18">小さな金属球 (1000個入り袋)<span class="tip-body">君は1回のアクションとして、この無数の小さな金属球を10×10ﾌｨｰﾄの平らな床にバラまくことができる。
+この範囲を移動するクリーチャーは、難易度10【敏捷力】セーヴィング･スローを行ない、失敗すると転倒して伏せ状態になる。あるいは半分の移動速度で移動するなら、そのセーヴィング･スローを行なう必要は無い。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="18" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="19">ベル<span class="tip-body">小さな呼び鈴。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="19" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="20">ろうそく<span class="tip-body">ろうそくは、半径5ﾌｨｰﾄまでを明るく照らし、その先5ﾌｨｰﾄまでを薄暗い明かりで照らす。
+ろうそくは1時間、燃え続ける。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="20" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="21">かなてこ<span class="tip-body">扉や箱をこじ開ける場合など、かなてこを使うことで【筋力】判定に有利が得られる。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="21" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="22">金槌<span class="tip-body">重い金属製の頭部を持つこの道具は、取っ手の棒の先に直角に取り付けられており、物を壊したり釘を打ち込む作業などに使用する。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="22" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="23">ピトン<span class="tip-body">登攀用ハンマーを用いて、壁の亀裂に打ち込んで使う金属製のスパイク。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="23" value="10" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="24">覆い付きランタン<span class="tip-body">覆い付きランタンは、半径30ﾌｨｰﾄまでを明るく照らし、その先30ﾌｨｰﾄまでを薄暗い明かりで照らす。
+ランタンは油1ビン(約500cc)で6時間、燃え続ける。
+君は1回のアクションでランタンの火を覆い、半径5ﾌｨｰﾄを薄暗い明かりで照らす程度にまで、明るさを絞ることができる。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="24" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="25">油 (ビン)<span class="tip-body">1パイント(約500cc)の油が入った陶器製のビン。
+君は1回のアクションとして、5ﾌｨｰﾄ以内のクリーチャーに中の油を浴びせるか、20ﾌｨｰﾄまで投擲することができる(衝撃で割れる)。
+どちらの場合も、油ビンを代用武器として扱い、1回の遠隔攻撃として判定する。命中したら対象は油で覆われる。
+油は1分後に乾くが、それまでに[火]ダメージを与えたなら、追加で5[火]ダメージを与えることができる。
+あるいは、君は1回のアクションとして平らな地面に油をまき、5×5ﾌｨｰﾄの範囲を油で覆うことができる。これに火が付いたなら2ラウンド燃え続け、その範囲に入ったクリーチャーに5[火]ダメージを与えることができる。1体のクリーチャーが、1ターンに2回以上、このダメージを受けることは無い。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="25" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="26">ほくち箱<span class="tip-body">この小箱の中には、火打ち石と打ち金、ほくちが入っている。
+君は1回のアクションとして、松明や、その他の引火性の強い可燃物に火を付けることができる。
+それ以外のものに火を付けるには1分かかる。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="26" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="27">水袋<span class="tip-body">4パイント液体を入れることができる。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="27" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="28">ロープ / 麻 (50ﾌｨｰﾄ)<span class="tip-body">ロープはHP2。
+引きちぎる場合、難易度17【筋力】判定を要する。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="28" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="29">アロー +1<span class="tip-body">あらゆる種類の弓に使用される矢弾。 魔法がかけられている。
+この魔法の矢弾を用いて行なう攻撃ロールとダメージ・ロールには+1ボーナスが付く。この矢弾は、一度目標にヒットしたなら、もはや魔法の矢弾ではなくなってしまう。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="29" value="7" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="30">ポーション・オヴ・クライミング／登攀の水薬<span class="tip-body">このポーションは、断層のように茶色、銀、灰色の層に分かれている。ボトルを振っても不思議と混ざることが無い。
+このポーションを飲むと、1時間の間、通常の移動速度と同じだけの登攀移動速度が得られる。またその間、登攀のために行なう筋力&lt;運動&gt;判定に有利を得る。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="30" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="31">0050_ジルコン(風信子鉱)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="31" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="32">0050_ジルコン(風信子鉱)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="32" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="33">0100_パール(真珠)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="33" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="34">0100_パール(真珠)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="34" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="35">0500_ブルー･スピネル(尖晶石)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="35" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="36">Potion of Fire Breath<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="36" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="42">アロー<span class="tip-body">あらゆる種類の弓に使用される標準的な矢弾。滑らかな木製の軸にガチョウの羽の矢羽根と鍛造した金属製の矢尻が付いた平凡な矢である。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="42" value="10" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="44">鍵<span class="tip-body">ジェドラの持っていた鍵。大きさからするに扉の鍵だと思われるが…</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="44" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="45">矢筒<span class="tip-body">矢筒には最大20本の矢を収納することができます。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="45" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="46">鋼鉄製の鏡<span class="tip-body">鉄でできた鏡。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="46" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="47">10フィート棒<span class="tip-body">頑丈な木でできた長さ10フィートの棒。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="47" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="48">背負い袋<span class="tip-body">1立方ﾌｨｰﾄ / 30ポンドの物を入れることができる。
+その他にも背負い袋の外側に、携帯用寝具やロープをくくりつけて運ぶことができる。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="48" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="49">ヘンプロープ（50フィート）<span class="tip-body">ロープはHP2。引きちぎる場合、難易度17【筋力】判定を要する。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="49" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="50">周辺地域の地図<span class="tip-body">ゼルコアの渡し場から"破滅の口"までの道のりが記された簡易な地図。おそらくこの地図を手に入れたものが冒険の途について、そして死んだのだろう。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="50" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class=" eq-toggle" style="color:var(--td)" data-action="toggle-equip" data-item-idx="51">◇</span> <span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="51">ウィザードローブ<span class="tip-body">星や占星術のシンボルが刺繍された深紅のウィザードローブ</span></span></td><td class="text-s text-m">equipment</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="51" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="54">アロー +2<span class="tip-body">あらゆる種類の弓に使用される矢弾。 魔法がかけられている。
+この魔法の矢弾を用いて行なう攻撃ロールとダメージ・ロールには+2ボーナスが付く。この矢弾は、一度目標にヒットしたなら、もはや魔法の矢弾ではなくなってしまう。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="54" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="55">バッグ・オヴ・ホールディング／物入れ袋<span class="tip-body">その他の魔法のアイテムこの袋を外側から見た大きさは、口の直径約2フィート、深さ4フィート。だが中の空間はそれよりずっと大きい。この袋は重量500ポンド（約230kg）以内、かつ容量64立方フィート（約1800リットル）以内のものを収めることができる。しかも袋の重さは、中にどれだけ物が入っていても、常に15ポンド（約7kg）である。この袋の中から1つのアイテムを取り出すには1回のアクションを要する。この袋の内容量が上限を超えたり、袋が突き破られたり引き裂かれたりしたなら、袋は破裂して破壊されてしまい、中のものはアストラル界に散乱する。袋を裏返したなら、中身は損害を受けることなくこぼれ出し、袋はもう一度裏返して元通りにするまでは使えなくなる。呼吸をするクリーチャーはこの袋の中で（10÷袋の中のクリーチャー数）分まで生存できる（最低1分）。この時間が過ぎたなら、中のクリーチャーは窒息しはじめる。この袋をヒューワーズ・ハンディ・ハヴァサック、ポータブル・ホールその他のアイテムの生み出す異次元空間の中に置いたならば、双方のアイテムが瞬時に破壊され、アストラル界へのゲート（次元門）が生れる。このゲートは一方のアイテムがもう一方のアイテムの中に置かれたまさにその場所に出現する。このゲートから10フィート以内のクリーチャーはみな、ゲートに吸いこまれ、アストラル界のランダムな場所に放り出される。しかるのちゲートは閉じる。このゲートは一方通行であり、再び開かれることはない。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="55" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="56">500_ダイヤモンド(金剛石)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="56" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="57">0100_ガーネット(柘榴石)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="57" value="6" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="58">ポーション・オヴ・ヒーリング／癒しの水薬<span class="tip-body">ポーションの赤い液体をゆらすと、ほのかな光輝を放つ。
+このポーションを飲むことで、2d4 + 2ヒットポイントが回復する。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="58" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="60">呪文の巻物: ガイディング・ボルト<span class="tip-body">1レベル &amp;Reference[Spell Scroll]@Embed[Compendium.dnd5e.spells.Item.7buEm5KhI5lP8m1z inline]</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="60" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="63">50_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="63" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="64">50_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="64" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="65">50_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="65" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="66">50_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="66" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="67">50_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="67" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="69">ファイアコブラの革<span class="tip-body">ジャイアントファイヤーコブラの皮は鮮やかなエメラルドグリーンで、その肌は美しさだけでなく耐火性も備えており、非常に価値が高い。蛇の皮を売れば、1,000gpの価値がある。また、マジックアイテムの素材になるかもしれない。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="69" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="70">ファイアコブラの革<span class="tip-body">ジャイアントファイヤーコブラの皮は鮮やかなエメラルドグリーンで、その肌は美しさだけでなく耐火性も備えており、非常に価値が高い。蛇の皮を売れば、1,000gpの価値がある。また、マジックアイテムの素材になるかもしれない。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="70" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="71">ポーチ<span class="tip-body">布、または革製の小物入れ。スリング･ブリットなら20個、ブロウガン用ニードルなら50本などを入れておくことができる。0.2立方フィート / 6ポンドの物を入れることができる。</span></span></td><td class="text-s text-m">container</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="71" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="72">アイアンスパイク<span class="tip-body">鉄でできた10チンチの大釘。即席で扉を塞ぐことができる。通常、10本単位で販売されている。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="72" value="5" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="73">呪文の巻物: フライ<span class="tip-body">3レベル &amp;Reference[Spell Scroll], 集中必要1体の同意するクリーチャーに接触する。持続時間の間､目標は飛行移動速度60ft​を得る。呪文が終了した際にまだ空中にいるなら､目標は特に落下を止める手段がない限り､落下する。
+高レベル発動：君がこの呪文を4レベル以上の呪文スロットを用いて発動する場合､スロットのレベルが3レベルを1上回るごとに追加で1体のクリーチャーを目標とすることができる。</span></span></td><td class="text-s text-m">consumable</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="73" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="74">珊瑚のアクセサリー<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="74" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="75">0250_トパーズ(黄玉)<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="75" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="76">金の頭蓋骨<span class="tip-body">眼窩にはルビーが2つ嵌め込まれている。各ルビーの価値は500gp（無傷で売却した場合の総価値は1,250gp）。</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="76" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class=" eq-toggle" style="color:var(--td)" data-action="toggle-equip" data-item-idx="77">◇</span> <span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="77">チェイン・メイル<span class="tip-body">金属製のリングを連結して作られたチェイン・メイルは、その下地に布が用いられ、リングが身体に擦れるのを防ぎつつ、打撃による衝撃も和らげる。この防具一式には籠手も含まれる。</span></span></td><td class="text-s text-m">equipment</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="77" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr><tr><td><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="78">刺繍の入った小袋<span class="tip-body">(説明なし)</span></span></td><td class="text-s text-m">loot</td><td><span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-num" data-action="set-quantity" data-item-idx="78" value="1" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></td></tr></tbody></table><div class="coins"><span class="coin coin-pp"><span class="cl">PP</span> <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-coin" data-action="set-currency" data-coin="pp" value="0" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></span><span class="coin coin-gp"><span class="cl">GP</span> <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-coin" data-action="set-currency" data-coin="gp" value="1223" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></span><span class="coin coin-ep"><span class="cl">EP</span> <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-coin" data-action="set-currency" data-coin="ep" value="0" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></span><span class="coin coin-sp"><span class="cl">SP</span> <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-coin" data-action="set-currency" data-coin="sp" value="32" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></span><span class="coin coin-cp"><span class="cl">CP</span> <span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="e-coin" data-action="set-currency" data-coin="cp" value="10" min="0"><button type="button" class="nc-btn" data-nc="1">+</button></span></span></div></div></div></div><div class="pers-grid"><div class="pers-box clickable" data-action="edit-detail" data-detail-key="trait"><div class="lbl">性格特徴</div><div class="ct"><p><span style="font-family: Meiryo">初見の相手は敵に回さず仲良くなろうとする。</span></p></div></div><div class="pers-box clickable" data-action="edit-detail" data-detail-key="ideal"><div class="lbl">理想</div><div class="ct"><p><span style="font-family: Meiryo">自由。世に鎖あらば断ち切ろう。鎖を作った者もまた断ち切ろう。（混沌）</span></p></div></div><div class="pers-box clickable" data-action="edit-detail" data-detail-key="bond"><div class="lbl">絆</div><div class="ct"><p><span style="font-family: Meiryo">私は自分の失敗のせいで愛する人を死なせてしまった。二度とは繰り返さない。</span></p></div></div><div class="pers-box clickable" data-action="edit-detail" data-detail-key="flaw"><div class="lbl">弱点</div><div class="ct"><p><span style="font-family: Meiryo">雲行きが怪しい時はすぐに尻尾を巻いて逃げ出す。</span></p></div></div></div><div class="sec"><div class="sec-title">習熟・言語</div><div class="pl-grid"><div class="pl-grp"><div class="lbl">言語</div><div class="items"><span class="pill">common</span><span class="pill">undercommon</span><span class="pill">cant</span></div></div><div class="pl-grp"><div class="lbl">武器習熟</div><div class="items"><span class="pill">単純武器</span><span class="pill">handcrossbow</span><span class="pill">longsword</span><span class="pill">rapier</span><span class="pill">shortsword</span></div></div><div class="pl-grp"><div class="lbl">防具習熟</div><div class="items"><span class="pill">軽装鎧</span></div></div></div></div><div class="sec"><div class="sec-title">特徴・特技</div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="1">猫の瞬発力<span class="tip-body">反射神経と機敏さに優れた君は、瞬間的に爆発的な速さで移動できる。戦闘中、君が自分のターンに移動する際、君はそのターンの終了時まで自分の移動速度を2倍にすることを選べる。この能力は1度使用すると、君がまったく移動せずに自分のターンを終了するまで使用できなくなる。</span></span></span><span class="fs">タバクシー</span><div class="fd">反射神経と機敏さに優れた君は、瞬間的に爆発的な速さで移動できる。戦闘中、君が自分のターンに移動する際、君はそのターンの終了時まで自分の移動速度を2倍にすることを選べる。この能力は1度使用すると、君がまったく移動せずに自分のターンを終了するまで使用できなくなる。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="5">習熟強化<span class="tip-body">3レベルの時点で、君が既に得ている技能習熟のうち2種類を選択すること。それらの習熟を使用して行なう能力値判定においては、君の習熟ボーナスは2倍になる。
+10レベルの時点で、君はさらに2種類の技能習熟を選択してこの利益を得られる。</span></span></span><span class="fs">ローグ 1</span><div class="fd">3レベルの時点で、君が既に得ている技能習熟のうち2種類を選択すること。それらの習熟を使用して行なう能力値判定においては、君の習熟ボーナスは2倍になる。
+10レベルの時点で、君はさらに2種類の技能習熟を選択してこの利益を得られる。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="6">急所攻撃<span class="tip-body">君は1ターンに1回、有利な攻撃ロールがヒットした相手に、追加で1d6ダメージを与えられる。ただし、その攻撃は“妙技”の特性を持つ武器または遠隔武器を使用したものでなければならない。また以下の状況をすべて満たせば有利である必要はない。
+
+・対象の5フィート以内に対象にとっての敵がいる。
+・その敵が無力状態ではない。
+・君の攻撃ロールが不利ではない。</span></span></span><span class="fs">ローグ 1</span><div class="fd">君は1ターンに1回、有利な攻撃ロールがヒットした相手に、追加で1d6ダメージを与えられる。ただし、その攻撃は“妙技”の特性を持つ武器または遠隔武器を使用したものでなければならない。また以下の状況をすべて満たせば有利である必要はない。
+
+・対象の5フィート以内に対象にとっての敵がいる。
+・その敵が無力状態ではない。
+・君の攻撃ロールが不利ではない。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="7">盗賊の符牒<span class="tip-body">ローグの訓練の間に君は盗賊の符牒を学んだ。俚言、隠語、暗号を混ぜ合せた秘密の符牒である。これを用いれば、一見何の変哲もない会話の中に、秘密の情報を隠すことができる。盗賊の符牒を知る者のみが、こうした情報を解し得る。この種の情報を伝えるには、同じことを隠さず話す場合の4倍の時間がかかる。
+
+加えて、君は一連の秘密の合図や印を解する。これは短く単純な情報を伝えるのに用いられる。「ここは危険」、「ここはギルドのなわばり」、「近くに獲物あり」、「ここの者はカモ」、「ここの者は逃亡中の盗賊に隠れ家を提供してくれる」等である。</span></span></span><span class="fs">ローグ 1</span><div class="fd">ローグの訓練の間に君は盗賊の符牒を学んだ。俚言、隠語、暗号を混ぜ合せた秘密の符牒である。これを用いれば、一見何の変哲もない会話の中に、秘密の情報を隠すことができる。盗賊の符牒を知る者のみが、こうした情報を解し得る。この種の情報を伝えるには、同じことを隠さず話す場合の4倍の時間がかかる。
+
+加えて、君は一連の秘密の合図や印を解する。これは短く単純な情報を伝えるのに用いられる。「ここは危険」、「ここはギルドのなわばり」、「近くに獲物あり」、「ここの者はカモ」、「ここの者は逃亡中の盗賊に隠れ家を提供し…</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="37">巧妙なアクション<span class="tip-body">2レベル以降、君は機転と俊敏さを活かして素早く動き、素早く行動することができるようになる。君は戦闘において君のターンごとに1回のボーナス・アクションをとれる。このアクションは以下のいずれかのためにのみ使用できる：1.早足、2.離脱、3.隠れ身。</span></span></span><span class="fs">ローグ 2</span><div class="fd">2レベル以降、君は機転と俊敏さを活かして素早く動き、素早く行動することができるようになる。君は戦闘において君のターンごとに1回のボーナス・アクションをとれる。このアクションは以下のいずれかのためにのみ使用できる：1.早足、2.離脱、3.隠れ身。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="38">ローグの類型<span class="tip-body">3レベルの時点で、君は類型の中から1つを選び、これに従ってローグの能力を鍛錬する。ここでは@Compendium[dnd5e.subclasses.k8iuefRorWOjb9gR]{シーフ}の類型のみを詳述する。他の類型に関しては『Player's Handbook』を参照のこと。ここで選択した類型によって、3、9、13、17レベルで得られる特徴が決定される。</span></span></span><span class="fs">ローグ 3</span><div class="fd">3レベルの時点で、君は類型の中から1つを選び、これに従ってローグの能力を鍛錬する。ここでは@Compendium[dnd5e.subclasses.k8iuefRorWOjb9gR]{シーフ}の類型のみを詳述する。他の類型に関しては『Player's Handbook』を参照のこと。ここで選択した類型によって、3、9、13、17レベルで得られる特徴が決定される。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="40">機動戦闘<span class="tip-body">3レベル以降、戦闘中の君を足止めするのは難しくなる。敵が君から5フィート以内でターンを終了した時、君はリアクションとして、最大で自分の移動速度の半分までの移動を行うことができる。この移動は機会攻撃を誘発しない。</span></span></span><span class="fs">ローグLv3</span><div class="fd">3レベル以降、戦闘中の君を足止めするのは難しくなる。敵が君から5フィート以内でターンを終了した時、君はリアクションとして、最大で自分の移動速度の半分までの移動を行うことができる。この移動は機会攻撃を誘発しない。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="41">サバイバルの達人<span class="tip-body">3レベルでこの類型を選んだ時点で、君は(まだ習熟していないなら)〈自然〉技能と〈生存〉技能の習熟を得る。さらに、これらの技能を用いて能力値判定を行う際、君の習熟ボーナスは2倍になる。</span></span></span><span class="fs">ローグLv3</span><div class="fd">3レベルでこの類型を選んだ時点で、君は(まだ習熟していないなら)〈自然〉技能と〈生存〉技能の習熟を得る。さらに、これらの技能を用いて能力値判定を行う際、君の習熟ボーナスは2倍になる。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="59">不動の照準<span class="tip-body">君は1回のボーナス・アクションとして、このターンに行なう次の1回の攻撃ロールに有利を得ることができる。このボーナス・アクションを行なえるのは、君がこのターンに全く移動していない場合に限られる。君がこのボーナス・アクションを行なった後、このターンの終了時まで、君の移動速度は0になる。</span></span></span><span class="fs">ローグ Lv3</span><div class="fd">君は1回のボーナス・アクションとして、このターンに行なう次の1回の攻撃ロールに有利を得ることができる。このボーナス・アクションを行なえるのは、君がこのターンに全く移動していない場合に限られる。君がこのボーナス・アクションを行なった後、このターンの終了時まで、君の移動速度は0になる。</div></div><div class="feat-item"><span class="fn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="62">直感回避<span class="tip-body">5レベル以降、君から見える者が君を攻撃してヒットを与えたなら、君はリアクションを用いてその攻撃の君に対するダメージを半分にすることができる。</span></span></span><span class="fs">ローグ 5</span><div class="fd">5レベル以降、君から見える者が君を攻撃してヒットを与えたなら、君はリアクションを用いてその攻撃の君に対するダメージを半分にすることができる。</div></div></div><div class="sec"><div class="sec-title">呪文</div><details class="sp-lv" open=""><summary>Lv1 (1)</summary><div class="sp-lv-body"><div class="sp-entry"><span class="prep off" data-action="toggle-prepared" data-item-idx="61" title="クリックで準備切替">○</span><span class="sn"><span class="tip" tabindex="0" data-action="edit-desc" data-item-idx="61">ガイディング・ボルト<span class="tip-body">射程内の君が選んだクリーチャーに向かって､閃光が伸びる。1体の目標に対して遠隔呪文攻撃を行うこと。ヒットしたなら､目標は4d6の [光輝] ダメージを受け､さらに次の君のターン終了時までに行われる､この目標に対する次の1回の攻撃ロールは有利を得る。神秘的な薄暗い光が目標のまわりできらめき､導いてくれるからだ。
+高レベル発動：君がこの呪文を2レベル以上の呪文スロットを用いて発動する場合､スロットのレベルが1レベルを1上回るごとにダメージが1d6増加する。</span></span></span><span class="sd">力術 · action · 射程:120 · 持続:1</span></div></div></details></div><div class="sec bio-section clickable" data-action="edit-bio"><div class="sec-title">経歴・外見</div><div style="font-size:13px;color:var(--td);margin-bottom:8px;font-style:italic">(外見なし)</div><div class="bio-ct"><p><span style="font-family:Meiryo">　ザイエン帝国出身のタバクシー。　かつて港町カレドルン(Karedorn)の裏社会でフリーランスの密偵として働いていたが、ある日意図せず大商人の恥ずべき秘密（それがなんであるかはクロメノウしか知らない）を知ってしまい、命を狙われる。彼と仲が良かった貧しい花売り娘は無惨にもその時巻き添えになって殺された。このことはクロメノウの心に二度と消えない傷跡を残している。　そして逃れ逃れて、とうとうラッパンアスクにまで流れ着いた。いくらなんでもこの恐ろしいダンジョンにまで追ってくるような殺し屋はいないだろうと踏んでのことだが、それを保証してくれる者などどこにもいない。何よりラッパンアスクで死ぬ確率の方がよほど高いのだ。これからのすべては運命の賽の目次第といったところだが、クロメノウは博打とペテンの腕前にはそれなりに自信があるのだ。</span></p></div></div></div>
+
+<!-- Description Edit Modal -->
+<div id="descModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">経歴・外見</span>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalNameRow" style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <label class="modal-label" id="modalNameLabel" style="margin:0;flex:1">外見</label>
+        <button class="modal-btn modal-btn-edit" id="modalEditToggle">編集モード</button>
+      </div>
+      <div id="modalNoNameRow" style="display:none;margin-bottom:12px;text-align:right">
+        <button class="modal-btn modal-btn-edit" id="modalEditToggle2">編集モード</button>
+      </div>
+      <textarea class="modal-input modal-name" id="modalName" placeholder="アイテム名" readonly="" rows="1" style="display: block;"></textarea>
+      <label class="modal-label" style="margin-top:12px">説明</label>
+      <div class="modal-view" id="modalView" style="display: block;"><p><span style="font-family:&#39;Noto Sans JP&#39;">遠方の国からやってきた異邦人。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">「彼は忠義に厚く仕えていた主人を亡くしたことがきっかけで国を出た。彼は今新たな土地で新たな主君を探しているのだ」<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">「いや彼は故郷の君主の息子の一人で、何か大きな事を成し遂げることで次なる君主へと認められようとしているのだ」<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">「彼の持ち物の大半は虎のマークが入っている。あのタイガーマークは遠方の侵略者の印なのではないか。他の仲間と共に我らの土地に浸透し奪おうとしているのだ」<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">……などは異国のイントネーションや言葉の細かな違い、更に彼が強く否定できず寡黙な人柄であることから、尾ひれが付き続けたことによる膨らんだ噂である。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial"><br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">本名は大岡光忠。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">家は確かに大陸でいう貴族のようなものであったが無精で不躾で忠義はなく、家出のような形で国を飛び出してきた。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">剣の才はあったので腕試し感覚で荒事をして回っていたが、言葉がうまく伝わらないことも度々ありいつのまにかラッパンアスクに挑むことになっていた。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">故郷にはないタイプの人間(特に女性)と食事に目が無い。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial"><br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">脇差と大弓は海を渡る際に持ってきた、それ以外の武器はこちらに来てから購入。<br style="color:rgb(0, 0, 0);font-family:&#39;Noto Sans JP&#39;;font-size:12px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial">虎のマークの道具は故郷では大変質の良いもので、特に湯が冷めにくい魔法のような瓶がお気に入り。</span></p></div>
+      <textarea class="modal-input modal-textarea" id="modalDesc" placeholder="説明文を入力..." style="display:none"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" id="modalCancel">閉じる</button>
+      <button class="modal-btn modal-btn-revert" id="modalRevert" style="display:none">元に戻す</button>
+      <button class="modal-btn modal-btn-save" id="modalSave" style="display:none">保存</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">Copyright © 2026, Kendermore Convention &amp; Visitors Bureau Office. Licensed under the <span class="mit-tip" tabindex="0">MIT License<span class="mit-body">MIT License
+
+Copyright (c) 2026 Kendermore Convention &amp; Visitors Bureau Office
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span></span>. Version 20260131.</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const ABILS={str:'筋力',dex:'敏捷',con:'耐久',int:'知力',wis:'判断',cha:'魅力'};
+const SKILL_MAP={
+  acr:['軽業','dex'],ani:['動物使い','wis'],arc:['魔法学','int'],ath:['運動','str'],
+  dec:['ペテン','cha'],his:['歴史','int'],ins:['看破','wis'],itm:['威圧','cha'],
+  inv:['捜査','int'],med:['医術','wis'],nat:['自然','int'],prc:['知覚','wis'],
+  prf:['芸能','cha'],per:['説得','cha'],rel:['宗教','int'],slt:['手先の早業','dex'],
+  ste:['隠密','dex'],sur:['生存','wis']
+};
+const SCHOOLS={abj:'防御',con:'召喚',div:'占術',enc:'心術',evo:'力術',ill:'幻術',nec:'死霊',trs:'変成'};
+const WEAPON_PROF={sim:'単純武器',mar:'軍用武器'};
+const ARMOR_PROF={lgt:'軽装鎧',med:'中装鎧',hvy:'重装鎧',shl:'盾'};
+
+function mod(s){return Math.floor(((s??10)-10)/2)}
+function fm(m){return m>=0?'+'+m:''+m}
+function tx(html){if(!html)return '';const d=document.createElement('div');d.innerHTML=html;return d.textContent.trim()}
+function dotCls(p){return p>=2?'expert':p>=1?'full':p>0?'half':''}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+
+// Tooltip - now includes data attribute for item index
+function tip(name,descHtml,itemIdx){
+  const desc=tx(descHtml);
+  const safe=desc?desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'):'(説明なし)';
+  const idxAttr=itemIdx!=null?` data-item-idx="${itemIdx}"`:'';
+  return `<span class="tip" tabindex="0" data-action="edit-desc"${idxAttr}>${name}<span class="tip-body">${safe}</span></span>`;
+}
+
+function nc(cls,attrs,val,min,max){
+  const mn=min!=null?` min="${min}"`:'';
+  const mx=max!=null?` max="${max}"`:'';
+  return `<span class="nc"><button type="button" class="nc-btn" data-nc="-1">−</button><input type="number" class="${cls}" ${attrs} value="${val}"${mn}${mx}><button type="button" class="nc-btn" data-nc="1">+</button></span>`;
+}
+
+// --- Data ---
+let currentActor=null;
+let currentActors=[];
+let dirty=false;
+
+// Modal state
+let modalItemIdx=null;
+
+function ensurePath(obj,...keys){
+  let c=obj;
+  for(const k of keys){if(!c[k])c[k]={};c=c[k];}
+  return c;
+}
+
+function pickActors(json){
+  if(Array.isArray(json)) return json.filter(a=>a?.type==='character'||a?.type==='npc'||a?.system?.abilities);
+  if(json?.actors) return json.actors.filter(a=>a?.type==='character'||a?.system?.abilities);
+  if(json?.type&&json?.system) return [json];
+  return [];
+}
+
+function getLevel(actor){
+  const items=actor.items||[];
+  const cls=items.filter(i=>i.type==='class');
+  if(cls.length>0) return cls.reduce((s,c)=>s+(c.system?.levels||0),0);
+  const sys=actor.system||{};
+  return sys.details?.level??sys.details?.levels??0;
+}
+
+function getClasses(items){
+  const cls=items.filter(i=>i.type==='class');
+  if(!cls.length) return '—';
+  return cls.map(c=>{
+    const sub=items.find(i=>i.type==='subclass'&&(i.system?.classIdentifier===c.system?.identifier||i.system?.parentClass===c._id));
+    return c.name+(sub?' ('+sub.name+')':'');
+  }).join(' / ');
+}
+
+function getRace(actor){
+  const raceItem=(actor.items||[]).find(i=>i.type==='race');
+  if(raceItem) return raceItem.name;
+  const r=actor.system?.details?.race;
+  return (typeof r==='string')?r:'';
+}
+
+function getBackground(actor){
+  const bgItem=(actor.items||[]).find(i=>i.type==='background');
+  if(bgItem) return bgItem.name;
+  const r=actor.system?.details?.background;
+  return (typeof r==='string')?r:'';
+}
+
+function getAC(sys,items){
+  if(typeof sys.attributes?.ac?.value==='number') return sys.attributes.ac.value;
+  if(typeof sys.attributes?.ac?.flat==='number') return sys.attributes.ac.flat;
+  if(typeof sys.attributes?.ac==='number') return sys.attributes.ac;
+  const dexMod=mod(sys.abilities?.dex?.value);
+  const calc=sys.attributes?.ac?.calc||'default';
+  const armors=(items||[]).filter(i=>(i.type==='equipment'||i.type==='armor')&&i.system?.equipped&&i.system?.armor?.value);
+  if(armors.length){
+    let best=10;
+    for(const a of armors){
+      const av=a.system.armor.value;
+      const at=a.system?.type?.value||a.system?.armor?.type||'light';
+      if(at==='heavy') best=Math.max(best,av);
+      else if(at==='medium') best=Math.max(best,av+Math.min(dexMod,2));
+      else if(at==='shield') best+=2;
+      else best=Math.max(best,av+dexMod);
+    }
+    return best;
+  }
+  if(calc==='mage') return 13+dexMod;
+  if(calc==='natural') return 10+dexMod;
+  return 10+dexMod;
+}
+
+function getAbilMod(sys,abil){
+  const a=sys.abilities?.[abil]||{};
+  return typeof a.mod==='number'?a.mod:mod(a.value);
+}
+
+function weaponDmg(ws,sys,prof){
+  const acts=ws.activities?Object.values(ws.activities):[];
+  const atk=acts.find(a=>a.type==='attack'||a.type==='damage');
+  if(atk){
+    let ability=atk.attack?.ability||ws.ability||'';
+    const atkType=atk.attack?.type?.value||'melee';
+    let abilMod;
+    if(ability==='spellcasting'){
+      ability=sys.attributes?.spellcasting||'int';
+      abilMod=getAbilMod(sys,ability);
+    }else if(ability&&sys.abilities?.[ability]){
+      abilMod=getAbilMod(sys,ability);
+    }else{
+      const props=Array.isArray(ws.properties)?ws.properties:(ws.properties?.value||[]);
+      const fin=Array.isArray(props)?props.includes('fin'):false;
+      if(atkType==='ranged') abilMod=getAbilMod(sys,'dex');
+      else if(fin) abilMod=Math.max(getAbilMod(sys,'str'),getAbilMod(sys,'dex'));
+      else abilMod=getAbilMod(sys,'str');
+    }
+    const mag=ws.magicalBonus||0;
+    const ab=parseInt(atk.attack?.bonus)||0;
+    const pr=ws.proficient!==false?(sys.attributes?.prof??prof??2):0;
+    const atkTotal=abilMod+pr+mag+ab;
+    const parts=atk.damage?.parts||[];
+    let dmg=parts.map(p=>{
+      if(Array.isArray(p)) return p.join(' ');
+      let d='';
+      if(p.number&&p.denomination) d=p.number+'d'+p.denomination;
+      if(p.bonus) d+=(String(p.bonus).startsWith('+')||String(p.bonus).startsWith('-')?'':'+')+p.bonus;
+      const types=(p.types||[]).filter(t=>t&&t!=='none');
+      return [d,types.join('/')].filter(Boolean).join(' ');
+    }).join(' + ')||'—';
+    if(dmg!=='—'&&abilMod) dmg+=' '+fm(abilMod);
+    if(mag>0) dmg+=' +'+mag;
+    return {atk:fm(atkTotal),dmg};
+  }
+  const ability=ws.ability||'str';
+  const abilMod=getAbilMod(sys,ability);
+  const pr2=ws.proficient!==false?(sys.attributes?.prof??prof??2):0;
+  const atkB=abilMod+pr2+(ws.attackBonus||0);
+  const parts=(ws.damage?.parts||[]).map(p=>Array.isArray(p)?p.join(' '):String(p)).join(' / ');
+  return {atk:fm(atkB),dmg:parts||'—'};
+}
+
+// --- Save details open state ---
+function saveDetailsState(){
+  const state={};
+  document.querySelectorAll('#sheet details').forEach((d,i)=>{state[i]=d.open;});
+  return state;
+}
+function restoreDetailsState(state){
+  document.querySelectorAll('#sheet details').forEach((d,i)=>{if(i in state)d.open=state[i];});
+}
+
+// --- Render ---
+function render(actor){
+  if(!actor){$('#sheet').innerHTML='<p class="text-m">キャラが見つかりません</p>';return;}
+  currentActor=actor;
+
+  const detState=saveDetailsState();
+  const scrollY=window.scrollY;
+
+  const sys=actor.system||{};
+  const items=actor.items||[];
+  const level=getLevel(actor);
+  const prof=sys.attributes?.prof??Math.floor(Math.max(level-1,0)/4)+2;
+  let h='';
+
+  // Header
+  const name=actor.name||'(unnamed)';
+  const cls=getClasses(items);
+  const race=getRace(actor);
+  const bg=getBackground(actor);
+  const align=sys.details?.alignment||'';
+  const xp=sys.details?.xp?.value;
+  h+=`<div class="char-header"><div class="char-name">${name}</div><div class="char-sub">${cls} Lv${level||'?'} · ${race||'—'} · ${bg||'—'} · ${align||'—'}${xp!=null?' · '+xp+' XP':''}</div></div>`;
+
+  h+='<div class="sheet-body">';
+
+  // Col1: Abilities
+  h+='<div class="ab-col">';
+  for(const[k,label] of Object.entries(ABILS)){
+    const a=sys.abilities?.[k]||{};
+    const sc=a.value??10;
+    const m=typeof a.mod==='number'?a.mod:mod(sc);
+    h+=`<div class="ab-box"><div class="ab-lbl">${k.toUpperCase()}</div><div class="ab-score">${sc}</div><div class="ab-mod">${fm(m)}</div></div>`;
+  }
+  h+='</div>';
+
+  // Col2: Saves & Skills
+  h+='<div>';
+
+  // Inspiration & Prof
+  const insp=sys.attributes?.inspiration;
+  h+=`<div class="prof-row"><div class="prof-box"><div class="big clickable" data-action="toggle-inspiration">${insp?'★':'☆'}</div><div class="lbl">Inspiration</div></div><div class="prof-box"><div class="big">+${prof}</div><div class="lbl">習熟ボーナス</div></div></div>`;
+
+  // Saves
+  h+='<div class="panel"><div class="p-title">セーヴィング・スロー</div>';
+  for(const[k,label] of Object.entries(ABILS)){
+    const a=sys.abilities?.[k]||{};
+    const m=getAbilMod(sys,k);
+    const p=a.proficient?true:false;
+    const total=p?m+prof:m;
+    h+=`<div class="s-row"><div class="dot ${p?'full':''}"></div><div class="bonus">${fm(total)}</div><div class="name">${label}</div></div>`;
+  }
+  h+='</div>';
+
+  // Skills
+  h+='<div class="panel"><div class="p-title">技能</div>';
+  for(const[k,[label,defAbil]] of Object.entries(SKILL_MAP)){
+    const sk=sys.skills?.[k]||{};
+    const abil=sk.ability||defAbil;
+    const abilMod=getAbilMod(sys,abil);
+    const pl=sk.value??sk.prof??0;
+    const total=abilMod+(pl?Math.round(prof*pl):0);
+    h+=`<div class="s-row"><div class="dot ${dotCls(pl)}"></div><div class="bonus">${fm(total)}</div><div class="name">${label}<span class="abil">${abil}</span></div></div>`;
+  }
+  h+='</div>';
+
+  // Passive Perception
+  const prc=sys.skills?.prc||{};
+  const prcAbil=prc.ability||'wis';
+  const prcMod=getAbilMod(sys,prcAbil);
+  const prcPl=prc.value??prc.prof??0;
+  const passiveP=10+prcMod+(prcPl?Math.round(prof*prcPl):0);
+  h+=`<div class="passive"><div class="big">${passiveP}</div><div class="lbl">受動知覚 (Passive Perception)</div></div>`;
+  h+='</div>';
+
+  // Col3: Combat
+  h+='<div>';
+
+  // AC, Init, Speed
+  const ac=getAC(sys,items);
+  const init=getAbilMod(sys,'dex')+(parseInt(sys.attributes?.init?.bonus)||0);
+  const spd=sys.attributes?.movement?.walk??sys.attributes?.speed?.value??30;
+  h+=`<div class="combat-trio"><div class="c-box"><div class="lbl">AC</div><div class="val">${ac}</div></div><div class="c-box"><div class="lbl">イニシアチブ</div><div class="val">${fm(init)}</div></div><div class="c-box"><div class="lbl">移動速度</div><div class="val">${spd}</div><div class="unit">ft</div></div></div>`;
+
+  // HP
+  const hp=ensurePath(sys,'attributes','hp');
+  if(hp.max==null && hp.value!=null) hp.max=hp.value; // maxがnullなら現在値で初期化
+  const hpCur=hp.value??0;
+  const hpMax=hp.max??hpCur;
+  const hpTemp=hp.temp??0;
+  const hpR=hpMax>0?hpCur/hpMax:1;
+  const hpC=hpR>.5?'var(--grn)':hpR>.25?'#c8a030':'var(--red)';
+  h+=`<div class="hp-panel"><div class="p-title">ヒットポイント</div>`;
+  h+=`<div class="hp-row">${nc('hp-cur','data-action="set-hp"',hpCur,0,hpMax)}<span class="hp-sep">/</span><span class="hp-max">${hpMax}</span></div>`;
+  h+=`<div class="hp-bar"><div class="hp-bar-fill" style="width:${Math.round(hpR*100)}%;background:${hpC}"></div></div>`;
+  h+=`<div class="hp-adj"><button class="hp-btn hp-btn-dmg" data-action="hp-dmg">Damage</button>${nc('hp-adj-input','id="hpDelta"',0,0,null)}<button class="hp-btn hp-btn-heal" data-action="hp-heal">Heal</button></div>`;
+  h+=`<div class="hp-temp-row">一時HP: ${nc('hp-temp-input','data-action="set-temp-hp"',hpTemp,0,null)}</div>`;
+  h+=`</div>`;
+
+  // Hit Dice & Death Saves
+  const clsItems=items.filter(i=>i.type==='class');
+  h+=`<div class="hd-death">`;
+  // Hit Dice
+  h+=`<div class="mini-p"><div class="lbl">ヒットダイス</div>`;
+  if(clsItems.length){
+    for(let ci=0;ci<clsItems.length;ci++){
+      const c=clsItems[ci];
+      const hd=c.system?.hd||{};
+      const den=hd.denomination||'d8';
+      const lvl=c.system?.levels||0;
+      const spent=hd.spent||0;
+      const remain=lvl-spent;
+      h+=`<div style="margin:3px 0"><span class="text-s">${den}</span> <span style="font-weight:700">${remain}</span>/${lvl} `;
+      h+=`<button class="hp-btn hp-btn-dmg" style="font-size:10px;padding:1px 6px" data-action="hd-use" data-class-idx="${ci}">使用</button> `;
+      h+=`<button class="hp-btn hp-btn-heal" style="font-size:10px;padding:1px 6px" data-action="hd-recover" data-class-idx="${ci}">回復</button>`;
+      h+=`</div>`;
+    }
+  }else h+='<div>—</div>';
+  h+=`</div>`;
+  // Death Saves
+  const death=ensurePath(sys,'attributes','death');
+  const dS=death.success||0,dF=death.failure||0;
+  h+=`<div class="mini-p"><div class="lbl">デス・セーヴ</div>`;
+  h+=`<div class="text-s">成功</div><div class="dd">${[0,1,2].map(i=>`<div class="d ${i<dS?'ok':''}" data-action="death-success" data-idx="${i}"></div>`).join('')}</div>`;
+  h+=`<div class="text-s">失敗</div><div class="dd">${[0,1,2].map(i=>`<div class="d ${i<dF?'ng':''}" data-action="death-failure" data-idx="${i}"></div>`).join('')}</div>`;
+  h+=`</div></div>`;
+
+  // Attacks
+  const weapons=items.filter(i=>i.type==='weapon');
+  h+='<div class="panel"><div class="p-title">攻撃</div>';
+  if(weapons.length){
+    h+='<table class="t"><thead><tr><th>名称</th><th>攻撃</th><th>ダメージ</th></tr></thead><tbody>';
+    for(const w of weapons){
+      const r=weaponDmg(w.system||{},sys,prof);
+      const idx=items.indexOf(w);
+      h+=`<tr><td>${tip(w.name,w.system?.description?.value,idx)}</td><td>${r.atk}</td><td>${r.dmg}</td></tr>`;
+    }
+    h+='</tbody></table>';
+  }else h+='<div class="text-m text-s">—</div>';
+  h+='</div>';
+
+  // Equipment
+  const eqTypes=new Set(['equipment','consumable','tool','loot','backpack','armor','container']);
+  const eqItems=items.filter(i=>eqTypes.has(i.type));
+  if(eqItems.length){
+    h+='<div class="panel"><div class="p-title">装備・所持品</div><table class="t"><thead><tr><th>名称</th><th>種別</th><th>数</th></tr></thead><tbody>';
+    for(const it of eqItems){
+      const s=it.system||{};
+      const idx=items.indexOf(it);
+      const hasEquip=(it.type==='equipment'||it.type==='armor');
+      const eqIcon=hasEquip?(s.equipped?'◆':'◇'):'';
+      const eqAttr=hasEquip?` data-action="toggle-equip" data-item-idx="${idx}"`:'';
+      const eqCls=hasEquip?' eq-toggle':'';
+      const eqColor=s.equipped?'color:var(--grn)':'color:var(--td)';
+      h+=`<tr><td>${hasEquip?`<span class="${eqCls}" style="${eqColor}"${eqAttr}>${eqIcon}</span> `:''}${tip(it.name,s.description?.value,idx)}</td><td class="text-s text-m">${it.type}</td><td>${nc('e-num',`data-action="set-quantity" data-item-idx="${idx}"`,s.quantity??1,0,null)}</td></tr>`;
+    }
+    h+='</tbody></table>';
+    // Currency
+    const cur=ensurePath(sys,'currency');
+    h+=`<div class="coins">`;
+    for(const[k,label] of [['pp','PP'],['gp','GP'],['ep','EP'],['sp','SP'],['cp','CP']]){
+      h+=`<span class="coin coin-${k}"><span class="cl">${label}</span> ${nc('e-coin',`data-action="set-currency" data-coin="${k}"`,cur[k]||0,0,null)}</span>`;
+    }
+    h+=`</div></div>`;
+  }
+
+  // Senses
+  const senses=sys.attributes?.senses||{};
+  const sl=[];
+  if(senses.darkvision)sl.push('暗視 '+senses.darkvision+'ft');
+  if(senses.blindsight)sl.push('盲目視 '+senses.blindsight+'ft');
+  if(senses.tremorsense)sl.push('振動感知 '+senses.tremorsense+'ft');
+  if(senses.truesight)sl.push('真実の目 '+senses.truesight+'ft');
+  if(sl.length) h+=`<div style="font-size:12px;color:var(--tm);text-align:center;margin-top:6px">${sl.join(' · ')}</div>`;
+
+  h+='</div>'; // end col3
+  h+='</div>'; // end sheet-body
+
+  // Personality
+  const det=sys.details||{};
+  const trait=det.trait||'';
+  const ideal=det.ideal||'';
+  const bond=det.bond||'';
+  const flaw=det.flaw||'';
+  h+='<div class="pers-grid">';
+  h+=`<div class="pers-box clickable" data-action="edit-detail" data-detail-key="trait"><div class="lbl">性格特徴</div><div class="ct">${trait||'—'}</div></div>`;
+  h+=`<div class="pers-box clickable" data-action="edit-detail" data-detail-key="ideal"><div class="lbl">理想</div><div class="ct">${ideal||'—'}</div></div>`;
+  h+=`<div class="pers-box clickable" data-action="edit-detail" data-detail-key="bond"><div class="lbl">絆</div><div class="ct">${bond||'—'}</div></div>`;
+  h+=`<div class="pers-box clickable" data-action="edit-detail" data-detail-key="flaw"><div class="lbl">弱点</div><div class="ct">${flaw||'—'}</div></div>`;
+  h+='</div>';
+
+  // Proficiencies & Languages
+  const traits=sys.traits||{};
+  const langs=Array.isArray(traits.languages?.value)?traits.languages.value:[];
+  const wProf=Array.isArray(traits.weaponProf?.value)?traits.weaponProf.value:[];
+  const aProf=Array.isArray(traits.armorProf?.value)?traits.armorProf.value:[];
+  if(langs.length||wProf.length||aProf.length){
+    h+='<div class="sec"><div class="sec-title">習熟・言語</div><div class="pl-grid">';
+    h+=`<div class="pl-grp"><div class="lbl">言語</div><div class="items">${langs.map(l=>'<span class="pill">'+l+'</span>').join('')||'—'}</div></div>`;
+    h+=`<div class="pl-grp"><div class="lbl">武器習熟</div><div class="items">${wProf.map(w=>'<span class="pill">'+(WEAPON_PROF[w]||w)+'</span>').join('')||'—'}</div></div>`;
+    h+=`<div class="pl-grp"><div class="lbl">防具習熟</div><div class="items">${aProf.map(a=>'<span class="pill">'+(ARMOR_PROF[a]||a)+'</span>').join('')||'—'}</div></div>`;
+    h+='</div></div>';
+  }
+
+  // Features (with uses)
+  const featTypes=new Set(['feat','class','race','background','subclass']);
+  const allFeats=items.filter(i=>featTypes.has(i.type));
+  if(allFeats.length){
+    h+='<div class="sec"><div class="sec-title">特徴・特技</div>';
+    for(const f of allFeats){
+      if(f.type==='class'||f.type==='race'||f.type==='background'||f.type==='subclass') continue;
+      const desc=tx(f.system?.description?.value);
+      const short=desc.length>250?desc.substring(0,250)+'…':desc;
+      const src=f.system?.requirements||f.type||'';
+      const idx=items.indexOf(f);
+      const uses=f.system?.uses;
+      const hasUses=uses&&(uses.max||uses.value);
+      let usesHtml='';
+      if(hasUses){
+        const uMax=uses.max||0;
+        const uVal=uses.value||0;
+        usesHtml=`<span class="feat-uses">(${nc('e-num',`style="width:32px" data-action="set-uses" data-item-idx="${idx}"`,uVal,0,uMax)} / ${uMax})</span>`;
+      }
+      h+=`<div class="feat-item"><span class="fn">${tip(f.name,f.system?.description?.value,idx)}</span>${usesHtml}<span class="fs">${src}</span>${short?'<div class="fd">'+short+'</div>':''}</div>`;
+    }
+    h+='</div>';
+  }
+
+  // Spells
+  const spells=items.filter(i=>i.type==='spell');
+  if(spells.length){
+    h+='<div class="sec"><div class="sec-title">呪文</div>';
+
+    // Spellcasting info
+    const scAbil=sys.attributes?.spellcasting||'';
+    if(scAbil){
+      const scMod=getAbilMod(sys,scAbil);
+      const dc=8+prof+scMod;
+      const sAtk=prof+scMod;
+      h+=`<div class="sp-meta"><div><b>呪文発動能力:</b> ${ABILS[scAbil]||scAbil.toUpperCase()}</div><div><b>呪文セーヴDC:</b> ${dc}</div><div><b>呪文攻撃:</b> ${fm(sAtk)}</div></div>`;
+    }
+
+    // Spell slots (editable)
+    const slots=ensurePath(sys,'spells');
+    const hasSlots=Object.keys(slots).some(k=>k.startsWith('spell')&&(slots[k]?.value>0||slots[k]?.override>0));
+    if(hasSlots){
+      h+='<div class="sp-slots">';
+      for(let lv=1;lv<=9;lv++){
+        const s=slots['spell'+lv];
+        if(!s) continue;
+        const max=s.override??s.value??0;
+        if(!max) continue;
+        const cur=s.value??0;
+        h+=`<div class="sl-grp"><span class="lv">${lv}lv</span>`;
+        for(let i=0;i<max;i++){
+          h+=`<div class="sl-d ${i<cur?'on':''}" data-action="toggle-slot" data-slot-lv="${lv}" data-slot-idx="${i}"></div>`;
+        }
+        h+='</div>';
+      }
+      h+='</div>';
+    }
+
+    // Group by level
+    const byLv=new Map();
+    for(const sp of spells){
+      const lv=sp.system?.level??0;
+      if(!byLv.has(lv)) byLv.set(lv,[]);
+      byLv.get(lv).push(sp);
+    }
+    const levels=[...byLv.keys()].sort((a,b)=>a-b);
+    for(const lv of levels){
+      const list=byLv.get(lv);
+      const pretty=lv===0?'キャントリップ':'Lv'+lv;
+      h+=`<details class="sp-lv"${lv<=1?' open':''}><summary>${pretty} (${list.length})</summary><div class="sp-lv-body">`;
+      for(const sp of list){
+        const ss=sp.system||{};
+        const school=SCHOOLS[ss.school]||ss.school||'';
+        const actType=ss.activation?.type||'';
+        const range=ss.range?.value||ss.range||'';
+        const dur=ss.duration?.value||(ss.duration?.units&&ss.duration.units!=='inst'?ss.duration.units:'')||'';
+        const conc=ss.properties?.value?.includes?.('concentration')||ss.components?.concentration||false;
+        const ritual=ss.properties?.value?.includes?.('ritual')||ss.components?.ritual||false;
+        const prepared=ss.preparation?.prepared||ss.preparation?.mode==='always'||ss.preparation?.mode==='atwill'||lv===0;
+        const canToggle=lv>0&&ss.preparation?.mode!=='always'&&ss.preparation?.mode!=='atwill';
+        const tags=[school,actType,range?'射程:'+range:'',dur?'持続:'+dur:'',conc?'集中':'',ritual?'儀式':''].filter(Boolean).join(' · ');
+        const idx=items.indexOf(sp);
+        h+=`<div class="sp-entry"><span class="prep ${prepared?'':'off'}" ${canToggle?`data-action="toggle-prepared" data-item-idx="${idx}"`:''} ${canToggle?'title="クリックで準備切替"':''}>${prepared?'●':'○'}</span><span class="sn">${tip(sp.name,ss.description?.value,idx)}</span><span class="sd">${tags}</span></div>`;
+      }
+      h+='</div></details>';
+    }
+    h+='</div>';
+  }
+
+  // Biography
+  const bio=det.biography?.value||'';
+  const appear=det.appearance||'';
+  h+='<div class="sec bio-section clickable" data-action="edit-bio"><div class="sec-title">経歴・外見</div>';
+  if(appear) h+=`<div style="font-size:13px;color:var(--tm);margin-bottom:8px;white-space:pre-line">${appear}</div>`;
+  else h+=`<div style="font-size:13px;color:var(--td);margin-bottom:8px;font-style:italic">(外見なし)</div>`;
+  if(bio) h+=`<div class="bio-ct">${bio}</div>`;
+  else h+=`<div class="bio-ct" style="color:var(--td);font-style:italic">(経歴なし)</div>`;
+  h+='</div>';
+
+  $('#sheet').innerHTML=h;
+  $('#sheet').classList.add('active');
+  $('#dropzone').style.display='none';
+  $('#exportBtn').style.display='inline-block';
+
+  restoreDetailsState(detState);
+  window.scrollTo(0,scrollY);
+}
+
+// --- Modal Functions ---
+let modalEditMode=false;
+let modalType=null; // 'item', 'detail', 'bio'
+let modalDetailKey=null; // for detail: 'trait','ideal','bond','flaw'
+
+const DETAIL_LABELS={trait:'性格特徴',ideal:'理想',bond:'絆',flaw:'弱点'};
+
+function openModal(itemIdx){
+  const item=currentActor?.items?.[itemIdx];
+  if(!item) return;
+  modalItemIdx=itemIdx;
+  modalEditMode=false;
+  modalType='item';
+  modalDetailKey=null;
+
+  $('#modalTitle').textContent=item.name||'(名称なし)';
+  const nameVal=item.name||'';
+  $('#modalName').value=nameVal;
+  $('#modalName').classList.toggle('multi',nameVal.includes('\n'));
+  $('#modalNameRow').style.display='flex';
+  const descHtml=item.system?.description?.value||'';
+  $('#modalDesc').value=descHtml;
+
+  updateModalMode();
+  $('#descModal').classList.add('open');
+}
+
+function openDetailModal(key){
+  if(!currentActor) return;
+  modalItemIdx=null;
+  modalEditMode=false;
+  modalType='detail';
+  modalDetailKey=key;
+
+  const det=currentActor.system?.details||{};
+  const value=det[key]||'';
+
+  $('#modalTitle').textContent=DETAIL_LABELS[key]||key;
+  $('#modalName').value='';
+  $('#modalNameRow').style.display='none';
+  $('#modalDesc').value=value;
+
+  updateModalMode();
+  $('#descModal').classList.add('open');
+}
+
+function openBioModal(){
+  if(!currentActor) return;
+  modalItemIdx=null;
+  modalEditMode=false;
+  modalType='bio';
+  modalDetailKey=null;
+
+  const det=currentActor.system?.details||{};
+  const appear=det.appearance||'';
+  const bio=det.biography?.value||'';
+
+  $('#modalTitle').textContent='経歴・外見';
+  $('#modalName').value=appear;
+  $('#modalName').classList.toggle('multi',appear.includes('\n'));
+  $('#modalNameRow').style.display='flex';
+  $('#modalNameLabel').textContent='外見';
+  $('#modalDesc').value=bio;
+
+  updateModalMode();
+  $('#descModal').classList.add('open');
+}
+
+function updateModalMode(){
+  const nameInput=$('#modalName');
+  const viewDiv=$('#modalView');
+  const editArea=$('#modalDesc');
+  const saveBtn=$('#modalSave');
+  const editBtn=$('#modalEditToggle');
+  const editBtn2=$('#modalEditToggle2');
+  const cancelBtn=$('#modalCancel');
+  const revertBtn=$('#modalRevert');
+  const nameRow=$('#modalNameRow');
+  const noNameRow=$('#modalNoNameRow');
+  const nameLabel=$('#modalNameLabel');
+
+  // Show/hide name row based on modalType
+  if(modalType==='detail'){
+    nameRow.style.display='none';
+    noNameRow.style.display='block';
+    nameInput.style.display='none';
+  }else{
+    nameRow.style.display='flex';
+    noNameRow.style.display='none';
+    nameInput.style.display='block';
+    nameLabel.textContent=modalType==='bio'?'外見':'名称';
+  }
+
+  if(modalEditMode){
+    // Edit mode
+    nameInput.removeAttribute('readonly');
+    viewDiv.style.display='none';
+    editArea.style.display='block';
+    saveBtn.style.display='inline-block';
+    revertBtn.style.display='inline-block';
+    editBtn.classList.add('active');
+    editBtn.textContent='表示モード';
+    editBtn2.classList.add('active');
+    editBtn2.textContent='表示モード';
+    cancelBtn.textContent='キャンセル';
+  }else{
+    // View mode
+    nameInput.setAttribute('readonly','');
+    const descHtml=$('#modalDesc').value;
+    if(modalType==='detail'){
+      // For detail fields, show as plain text (no HTML)
+      if(descHtml.trim()){
+        viewDiv.textContent=descHtml;
+        viewDiv.classList.remove('modal-no-desc');
+      }else{
+        viewDiv.innerHTML='<span class="modal-no-desc">(未設定)</span>';
+      }
+    }else{
+      // For items and bio, render HTML
+      if(descHtml.trim()){
+        viewDiv.innerHTML=descHtml;
+        viewDiv.classList.remove('modal-no-desc');
+      }else{
+        viewDiv.innerHTML='<span class="modal-no-desc">(説明なし)</span>';
+      }
+    }
+    viewDiv.style.display='block';
+    editArea.style.display='none';
+    saveBtn.style.display='none';
+    revertBtn.style.display='none';
+    editBtn.classList.remove('active');
+    editBtn.textContent='編集モード';
+    editBtn2.classList.remove('active');
+    editBtn2.textContent='編集モード';
+    cancelBtn.textContent='閉じる';
+  }
+}
+
+function toggleEditMode(){
+  modalEditMode=!modalEditMode;
+  updateModalMode();
+  if(modalEditMode){
+    $('#modalName').focus();
+  }
+}
+
+function closeModal(){
+  $('#descModal').classList.remove('open');
+  modalItemIdx=null;
+  modalEditMode=false;
+  modalType=null;
+  modalDetailKey=null;
+}
+
+function saveModal(){
+  if(!currentActor) return;
+
+  if(modalType==='item'){
+    if(modalItemIdx==null) return;
+    const item=currentActor.items[modalItemIdx];
+    if(!item) return;
+
+    const newName=$('#modalName').value.trim();
+    const newDesc=$('#modalDesc').value;
+
+    if(newName) item.name=newName;
+    const desc=ensurePath(item,'system','description');
+    desc.value=newDesc;
+  }else if(modalType==='detail'){
+    const det=ensurePath(currentActor,'system','details');
+    det[modalDetailKey]=$('#modalDesc').value;
+  }else if(modalType==='bio'){
+    const det=ensurePath(currentActor,'system','details');
+    det.appearance=$('#modalName').value;
+    const bio=ensurePath(det,'biography');
+    bio.value=$('#modalDesc').value;
+  }
+
+  markDirty();
+  closeModal();
+  render(currentActor);
+}
+
+function revertModal(){
+  if(!currentActor) return;
+
+  if(modalType==='item'){
+    const item=currentActor.items[modalItemIdx];
+    if(item){
+      $('#modalName').value=item.name||'';
+      $('#modalDesc').value=item.system?.description?.value||'';
+    }
+  }else if(modalType==='detail'){
+    const det=currentActor.system?.details||{};
+    $('#modalDesc').value=det[modalDetailKey]||'';
+  }else if(modalType==='bio'){
+    const det=currentActor.system?.details||{};
+    $('#modalName').value=det.appearance||'';
+    $('#modalDesc').value=det.biography?.value||'';
+  }
+}
+
+// Modal event listeners
+$('#modalClose').addEventListener('click',closeModal);
+$('#modalCancel').addEventListener('click',()=>{
+  if(modalEditMode){
+    // Cancel edit - revert to view mode
+    revertModal();
+    modalEditMode=false;
+    updateModalMode();
+  }else{
+    closeModal();
+  }
+});
+$('#modalSave').addEventListener('click',saveModal);
+$('#modalEditToggle').addEventListener('click',toggleEditMode);
+$('#modalEditToggle2').addEventListener('click',toggleEditMode);
+$('#modalRevert').addEventListener('click',revertModal);
+$('#descModal').addEventListener('click',e=>{
+  if(e.target.id==='descModal'){
+    if(modalEditMode){
+      // In edit mode, don't close on overlay click
+    }else{
+      closeModal();
+    }
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(!$('#descModal').classList.contains('open')) return;
+  if(e.key==='Escape'){
+    if(modalEditMode){
+      // Revert and go back to view mode
+      revertModal();
+      modalEditMode=false;
+      updateModalMode();
+    }else{
+      closeModal();
+    }
+  }
+  if(e.key==='Enter'&&e.ctrlKey&&modalEditMode) saveModal();
+});
+
+// --- Event Delegation ---
+$('#sheet').addEventListener('click',e=>{
+  const t=e.target;
+  const action=t.dataset?.action||t.closest('[data-action]')?.dataset?.action;
+  if(!action||!currentActor) return;
+  const sys=currentActor.system;
+  const target=t.closest('[data-action]')||t;
+
+  // Handle description edit (編集許可がONの時のみ)
+  if(action==='edit-desc' && $('#editModeChk').checked){
+    const itemIdx=parseInt(target.dataset.itemIdx);
+    if(!isNaN(itemIdx)){
+      e.preventDefault();
+      e.stopPropagation();
+      openModal(itemIdx);
+      return;
+    }
+  }
+
+  // Handle detail edit (trait, ideal, bond, flaw)
+  if(action==='edit-detail' && $('#editModeChk').checked){
+    const key=target.dataset.detailKey;
+    if(key){
+      e.preventDefault();
+      e.stopPropagation();
+      openDetailModal(key);
+      return;
+    }
+  }
+
+  // Handle biography edit
+  if(action==='edit-bio' && $('#editModeChk').checked){
+    e.preventDefault();
+    e.stopPropagation();
+    openBioModal();
+    return;
+  }
+
+  if(action==='toggle-inspiration'){
+    const attr=ensurePath(sys,'attributes');
+    attr.inspiration=!attr.inspiration;
+    markDirty();render(currentActor);
+  }
+
+  if(action==='hp-dmg'||action==='hp-heal'){
+    const input=document.getElementById('hpDelta');
+    const delta=parseInt(input?.value)||0;
+    if(delta<=0) return;
+    const hp=ensurePath(sys,'attributes','hp');
+    const max=hp.max??hp.value??0;
+    if(action==='hp-dmg'){
+      let dmg=delta;
+      const temp=hp.temp||0;
+      if(temp>0){
+        const absorbed=Math.min(temp,dmg);
+        hp.temp=temp-absorbed;
+        dmg-=absorbed;
+      }
+      hp.value=clamp((hp.value??0)-dmg,0,max);
+    }else{
+      hp.value=clamp((hp.value??0)+delta,0,max);
+    }
+    markDirty();render(currentActor);
+  }
+
+  if(action==='death-success'){
+    const idx=parseInt(target.dataset.idx);
+    const death=ensurePath(sys,'attributes','death');
+    const cur=death.success||0;
+    death.success=(idx<cur)?idx:idx+1;
+    markDirty();render(currentActor);
+  }
+  if(action==='death-failure'){
+    const idx=parseInt(target.dataset.idx);
+    const death=ensurePath(sys,'attributes','death');
+    const cur=death.failure||0;
+    death.failure=(idx<cur)?idx:idx+1;
+    markDirty();render(currentActor);
+  }
+
+  if(action==='hd-use'){
+    const ci=parseInt(target.dataset.classIdx);
+    const clsItems=(currentActor.items||[]).filter(i=>i.type==='class');
+    const c=clsItems[ci];if(!c) return;
+    const hd=ensurePath(c,'system','hd');
+    const lvl=c.system?.levels||0;
+    const spent=hd.spent||0;
+    if(spent<lvl){hd.spent=spent+1;markDirty();render(currentActor);}
+  }
+  if(action==='hd-recover'){
+    const ci=parseInt(target.dataset.classIdx);
+    const clsItems=(currentActor.items||[]).filter(i=>i.type==='class');
+    const c=clsItems[ci];if(!c) return;
+    const hd=ensurePath(c,'system','hd');
+    if((hd.spent||0)>0){hd.spent=(hd.spent||0)-1;markDirty();render(currentActor);}
+  }
+
+  if(action==='toggle-slot'){
+    const lv=parseInt(target.dataset.slotLv);
+    const idx=parseInt(target.dataset.slotIdx);
+    const slots=ensurePath(sys,'spells');
+    const key='spell'+lv;
+    if(!slots[key]) slots[key]={value:0,override:0};
+    const s=slots[key];
+    const max=s.override??s.value??0;
+    const cur=s.value??0;
+    if(idx<cur) s.value=idx; else s.value=idx+1;
+    s.value=clamp(s.value,0,max);
+    markDirty();render(currentActor);
+  }
+
+  if(action==='toggle-prepared'){
+    const idx=parseInt(target.dataset.itemIdx);
+    const item=currentActor.items[idx];if(!item) return;
+    const prep=ensurePath(item,'system','preparation');
+    prep.prepared=!prep.prepared;
+    markDirty();render(currentActor);
+  }
+
+  if(action==='toggle-equip'){
+    const idx=parseInt(target.dataset.itemIdx);
+    const item=currentActor.items[idx];if(!item) return;
+    const s=ensurePath(item,'system');
+    s.equipped=!s.equipped;
+    markDirty();render(currentActor);
+  }
+});
+
+// +/- button handler
+$('#sheet').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-nc]');
+  if(!btn) return;
+  const wrap=btn.closest('.nc');
+  const input=wrap?.querySelector('input[type=number]');
+  if(!input) return;
+  const step=parseInt(btn.dataset.nc)||0;
+  const min=input.min!==''?parseInt(input.min):-Infinity;
+  const max=input.max!==''?parseInt(input.max):Infinity;
+  input.value=clamp((parseInt(input.value)||0)+step,min,max);
+  input.dispatchEvent(new Event('change',{bubbles:true}));
+});
+
+// Number input changes (HP, temp, quantity, currency, uses)
+$('#sheet').addEventListener('change',e=>{
+  const t=e.target;
+  const action=t.dataset?.action;
+  if(!action||!currentActor) return;
+  const sys=currentActor.system;
+  const val=parseInt(t.value)||0;
+
+  if(action==='set-hp'){
+    const hp=ensurePath(sys,'attributes','hp');
+    const max=hp.max??hp.value??999;
+    hp.value=clamp(val,0,max);
+    markDirty();render(currentActor);
+  }
+  if(action==='set-temp-hp'){
+    const hp=ensurePath(sys,'attributes','hp');
+    hp.temp=Math.max(0,val);
+    markDirty();render(currentActor);
+  }
+  if(action==='set-quantity'){
+    const idx=parseInt(t.dataset.itemIdx);
+    const item=currentActor.items[idx];if(!item) return;
+    ensurePath(item,'system').quantity=Math.max(0,val);
+    markDirty();
+  }
+  if(action==='set-currency'){
+    const coin=t.dataset.coin;
+    const cur=ensurePath(sys,'currency');
+    cur[coin]=Math.max(0,val);
+    markDirty();
+  }
+  if(action==='set-uses'){
+    const idx=parseInt(t.dataset.itemIdx);
+    const item=currentActor.items[idx];if(!item) return;
+    const uses=ensurePath(item,'system','uses');
+    const max=uses.max||0;
+    uses.value=clamp(val,0,max);
+    markDirty();
+  }
+});
+
+function markDirty(){
+  dirty=true;
+  const btn=$('#exportBtn');
+  if(btn) btn.textContent='Export JSON *';
+  // Auto-save to localStorage if enabled
+  if($('#autoSaveChk')?.checked && currentActor){
+    localStorage.setItem('fvtt-autosave',JSON.stringify(currentActor));
+    localStorage.setItem('fvtt-autosave-name',currentActor.name||'unknown');
+  }
+}
+
+// --- Export ---
+$('#exportBtn').addEventListener('click',()=>{
+  if(!currentActor) return;
+  const json=JSON.stringify(currentActor,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(currentActor.name||'character').replace(/[^a-zA-Z0-9_\-\u3000-\u9fff]/g,'_')+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  dirty=false;
+  $('#exportBtn').textContent='Export JSON';
+});
+
+// --- Actor selection ---
+function populateSelect(actors){
+  const sel=$('#actorSel');
+  if(actors.length<=1){sel.style.display='none';return;}
+  sel.style.display='inline-block';sel.innerHTML='';
+  actors.forEach((a,i)=>{
+    const o=document.createElement('option');
+    o.value=i;o.textContent=(a.name||'(no name)')+' Lv'+(getLevel(a)||'?');
+    sel.appendChild(o);
+  });
+  sel.onchange=()=>render(actors[+sel.value]);
+}
+
+function handleJson(text){
+  let data;try{data=JSON.parse(text)}catch(e){alert('JSON解析に失敗');return;}
+  currentActors=pickActors(data);
+  dirty=false;
+  $('#exportBtn').textContent='Export JSON';
+  $('#autoSaveChk').checked=false; // 読み込み時は自動保存OFF
+  populateSelect(currentActors);
+  render(currentActors[0]);
+}
+
+function readFile(f){const r=new FileReader();r.onload=e=>handleJson(e.target.result);r.readAsText(f,'utf-8');}
+
+// Drag & drop
+const dz=$('#dropzone');
+['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('drag')}));
+['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('drag')}));
+dz.addEventListener('drop',e=>{const f=e.dataTransfer.files?.[0];if(f)readFile(f)});
+$('#file').addEventListener('click',function(){this.value=''});
+$('#file').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)readFile(f)});
+
+// Edit mode toggle
+$('#editModeChk').checked=false; // 常にOFFで開始
+
+// Autosave toggle
+const autoSaveChk=$('#autoSaveChk');
+autoSaveChk.checked=false; // 常にOFFで開始
+autoSaveChk.addEventListener('change',()=>{
+  // ONにした時点でキャラが読み込まれていれば即座に保存
+  if(autoSaveChk.checked && currentActor){
+    localStorage.setItem('fvtt-autosave',JSON.stringify(currentActor));
+    localStorage.setItem('fvtt-autosave-name',currentActor.name||'unknown');
+    updateRestoreBtn();
+  }
+});
+
+// Restore button
+const restoreBtn=$('#restoreBtn');
+function updateRestoreBtn(){
+  const saved=localStorage.getItem('fvtt-autosave');
+  const name=localStorage.getItem('fvtt-autosave-name')||'';
+  if(saved){
+    restoreBtn.style.display='inline-block';
+    restoreBtn.title='復元: '+name;
+  }else{
+    restoreBtn.style.display='none';
+  }
+}
+updateRestoreBtn();
+restoreBtn.addEventListener('click',()=>{
+  const saved=localStorage.getItem('fvtt-autosave');
+  if(saved){
+    const data=JSON.parse(saved);
+    const name=data.name||'(名称なし)';
+    if(confirm('「'+name+'」のデータを復元しますか？')){
+      handleJson(saved);
+    }
+  }
+});
+
+// Demo
+$('#demoBtn').addEventListener('click',()=>{
+  handleJson(JSON.stringify({
+    name:"Melissa the Heretic",type:"character",
+    system:{
+      details:{level:5,race:"Human",alignment:"Lawful Good",
+        trait:"信仰に篤く、困っている人を見過ごせない。",
+        ideal:"癒し：傷ついた者を癒すことが自分の使命。",
+        bond:"幼い頃に救ってくれた神官への恩義を忘れない。",
+        flaw:"頑固で、一度決めたことを曲げようとしない。",
+        biography:{value:"<p>元シーク教徒。ヘイヴンの神殿で、シーク教徒が隠していた「異端の力」に触れ、まことのクレリックとなる。</p><p>それが元でシーカー評議会で異端審問にかけられ、辺境の村ソレースに逃げて来たのだが...</p>"},
+        appearance:"Gender: Female\nEyes: Dark Blue\nHair: Brown\nHeight: 5'2''"
+      },
+      abilities:{str:{value:14,mod:2,proficient:0},dex:{value:16,mod:3,proficient:1},con:{value:14,mod:2,proficient:0},int:{value:10,mod:0,proficient:0},wis:{value:18,mod:4,proficient:1},cha:{value:12,mod:1,proficient:0}},
+      skills:{prc:{value:1,ability:'wis'},per:{value:1,ability:'cha'},ste:{value:1,ability:'dex'},med:{value:2,ability:'wis'},ins:{value:1,ability:'wis'},rel:{value:1,ability:'int'}},
+      attributes:{ac:{value:17},hp:{value:36,max:36,temp:0},prof:3,movement:{walk:30},senses:{darkvision:0},speed:{value:30},
+        death:{success:0,failure:0},inspiration:false,spellcasting:'wis'},
+      traits:{languages:{value:["Common","Elvish","Dwarvish"]},weaponProf:{value:["sim"]},armorProf:{value:["lgt","med","shl"]}},
+      spells:{spell1:{value:4,override:4},spell2:{value:3,override:3},spell3:{value:2,override:2}},
+      currency:{pp:2,gp:45,ep:0,sp:12,cp:30},
+      resources:{primary:{value:2,max:3,sr:false,lr:true,label:"Channel Divinity"}}
+    },
+    items:[
+      {type:'class',name:'Cleric',system:{levels:5,hd:{denomination:'d8',spent:1},identifier:'cleric',spellcasting:{progression:'full',ability:'wis'}}},
+      {type:'subclass',name:'Life Domain',system:{classIdentifier:'cleric'}},
+      {type:'race',name:'Human',system:{}},
+      {type:'background',name:'Acolyte',system:{}},
+      {type:'weapon',name:'Mace',system:{ability:'str',proficient:true,attackBonus:0,damage:{parts:[["1d6+2","bludgeoning"]]},properties:{},description:{value:'A simple melee weapon. 1d6 bludgeoning damage.'}}},
+      {type:'weapon',name:'Light Crossbow',system:{ability:'dex',proficient:true,attackBonus:0,damage:{parts:[["1d8+3","piercing"]]},properties:{amm:true,lod:true},description:{value:'A simple ranged weapon. 1d8 piercing damage. Ammunition (range 80/320), loading, two-handed.'}}},
+      {type:'equipment',name:'Chain Shirt',system:{quantity:1,equipped:true,armor:{value:13,type:'medium'},description:{value:"Medium armor, AC 13 + DEX (max 2)."}}},
+      {type:'equipment',name:'Shield',system:{quantity:1,equipped:true,armor:{value:2,type:'shield'},description:{value:"+2 AC."}}},
+      {type:'feat',name:'Channel Divinity',system:{uses:{value:2,max:3},description:{value:'Turn Undead or Preserve Life.'}}},
+      {type:'feat',name:'Disciple of Life',system:{description:{value:'Healing spells restore additional HP equal to 2 + spell level.'}}},
+      {type:'feat',name:'Blessed Healer',system:{description:{value:'When you cast a healing spell on another, you also regain HP.'}}},
+      {type:'consumable',name:'Holy Water',system:{quantity:3,description:{value:'Splash weapon dealing 2d6 radiant to fiends/undead.'}}},
+      {type:'tool',name:'Medallion of Mishakal',system:{quantity:1,description:{value:'A blue crystal medallion, holy symbol of Mishakal, goddess of healing.'}}},
+      {type:'tool',name:"Priest's Pack",system:{quantity:1,weight:29,description:{value:'Includes a backpack, blanket, candles, tinderbox, alms box, incense, censer, vestments, rations, and a waterskin.'}}},
+      {type:'spell',name:'Guidance',system:{level:0,school:'div',activation:{type:'Action',cost:1},range:{value:'Touch'},duration:{value:'1 min'},description:{value:'Add 1d4 to an ability check.'},preparation:{prepared:true}}},
+      {type:'spell',name:'Sacred Flame',system:{level:0,school:'evo',activation:{type:'Action',cost:1},range:{value:'60 ft'},duration:{units:'inst'},description:{value:'DEX save or 2d8 radiant damage.'},preparation:{prepared:true}}},
+      {type:'spell',name:'Spare the Dying',system:{level:0,school:'nec',activation:{type:'Action',cost:1},range:{value:'Touch'},duration:{units:'inst'},description:{value:'Stabilize a creature at 0 HP.'},preparation:{prepared:true}}},
+      {type:'spell',name:'Bless',system:{level:1,school:'enc',activation:{type:'Action',cost:1},range:{value:'30 ft'},duration:{value:'1 min'},description:{value:'Up to 3 creatures add 1d4 to attacks/saves.'},preparation:{prepared:true,mode:'prepared'},properties:{value:['concentration']}}},
+      {type:'spell',name:'Cure Wounds',system:{level:1,school:'evo',activation:{type:'Action',cost:1},range:{value:'Touch'},duration:{units:'inst'},description:{value:'Heal 1d8 + WIS mod HP.'},preparation:{prepared:true,mode:'prepared'}}},
+      {type:'spell',name:'Shield of Faith',system:{level:1,school:'abj',activation:{type:'Bonus',cost:1},range:{value:'60 ft'},duration:{value:'10 min'},description:{value:'+2 AC to target.'},preparation:{prepared:true,mode:'prepared'},properties:{value:['concentration']}}},
+      {type:'spell',name:'Healing Word',system:{level:1,school:'evo',activation:{type:'Bonus',cost:1},range:{value:'60 ft'},duration:{units:'inst'},description:{value:'Heal 1d4 + WIS mod HP as bonus action.'},preparation:{prepared:true,mode:'prepared'}}},
+      {type:'spell',name:'Spiritual Weapon',system:{level:2,school:'evo',activation:{type:'Bonus',cost:1},range:{value:'60 ft'},duration:{value:'1 min'},description:{value:'Create spectral weapon. 1d8 + WIS force damage.'},preparation:{prepared:true,mode:'prepared'}}},
+      {type:'spell',name:'Lesser Restoration',system:{level:2,school:'abj',activation:{type:'Action',cost:1},range:{value:'Touch'},duration:{units:'inst'},description:{value:'End one disease or condition.'},preparation:{prepared:true,mode:'prepared'}}},
+      {type:'spell',name:'Spirit Guardians',system:{level:3,school:'con',activation:{type:'Action',cost:1},range:{value:'Self (15ft)'},duration:{value:'10 min'},description:{value:'Spirits guard you. Enemies take 3d8 radiant.'},preparation:{prepared:true,mode:'prepared'},properties:{value:['concentration']}}},
+      {type:'spell',name:'Revivify',system:{level:3,school:'nec',activation:{type:'Action',cost:1},range:{value:'Touch'},duration:{units:'inst'},description:{value:'Return creature dead within 1 minute to life with 1 HP.'},preparation:{prepared:true,mode:'prepared'}}}
+    ]
+  }));
+});
+
+// Warn on unsaved
+window.addEventListener('beforeunload',e=>{
+  if(dirty){e.preventDefault();e.returnValue='';}
+});
+
+
+// ブラウザの遷移対策
+(() => {
+  window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  const pushGuard = () => history.pushState({ __guard: true, t: Date.now() }, '', location.href);
+  history.replaceState({ __base: true }, '', location.href);
+  pushGuard();
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) pushGuard();
+  });
+  const armWithUserActivation = () => pushGuard();
+  window.addEventListener('pointerdown', armWithUserActivation, { once: true, capture: true });
+  window.addEventListener('keydown', armWithUserActivation, { once: true, capture: true });
+  window.addEventListener('popstate', () => {
+    history.go(1);
+    setTimeout(pushGuard, 0);
+  });
+
+})();
+</script>
+
+
+<deepl-input-controller translate="no"><template shadowrootmode="open"><link rel="stylesheet" href="chrome-extension://cofdbpoegempjloogbagkncekinflcnj/build/content.css"><div dir="ltr" style="visibility: initial !important;"><div class="dl-input-translation-container svelte-95aucy"><div></div></div></div></template></deepl-input-controller></body></html>
