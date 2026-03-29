@@ -15,6 +15,8 @@ mash@十番町の会の公開リポジトリです
     - 破滅の口(Mouth of Doom)
 
 ### 現在探索中のレベル
+- LV.3
+    - デーモンの喉(The Demon's Gullet)
 - LV.2 
     - デーモンの喉(The Demon's Gullet)
 
